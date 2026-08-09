@@ -36,6 +36,11 @@ class MemoryStore:
         return ctx
 
     def create(self, context_id: str | None = None) -> str:
+        """Create a new context with a unique ID.
+        
+        If a context_id is provided and already exists, this method behaves as a
+        silent no-op, returning the existing ID without resetting or overwriting its data.
+        """
         cid = context_id or str(uuid.uuid4())
         if cid not in self._contexts:
             now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -52,18 +57,17 @@ class MemoryStore:
         return cid
 
     def append(self, context_id: str, events: list[dict], request_id: str | None = None) -> AppendResult:
-        # Check context existence and status
-        if context_id not in self._contexts:
-            raise UnknownContextError(context_id)
-        ctx = self._contexts[context_id]
-        if ctx["status"] == "purged":
-            raise ContextPurgedError(context_id)
-        if ctx["status"] in {"expired", "purge_eligible"}:
-            raise ExpiredContextError(context_id)
-
-        # Thread locking for serialization
+        # Thread locking for serialization, wrapping context status checks to prevent status check races
         lock = self._get_lock(context_id)
         with lock:
+            if context_id not in self._contexts:
+                raise UnknownContextError(context_id)
+            ctx = self._contexts[context_id]
+            if ctx["status"] == "purged":
+                raise ContextPurgedError(context_id)
+            if ctx["status"] in {"expired", "purge_eligible"}:
+                raise ExpiredContextError(context_id)
+
             # Idempotency check
             if request_id is not None:
                 key = (context_id, request_id)
@@ -146,59 +150,70 @@ class MemoryStore:
         raise ReceiptNotFoundError(context_id, node_id)
 
     def delete(self, context_id: str) -> None:
-        if context_id not in self._contexts:
-            raise UnknownContextError(context_id)
-        self._contexts.pop(context_id, None)
-        self._compactions.pop(context_id, None)
-        keys_to_remove = [k for k in self._idempotency if k[0] == context_id]
-        for k in keys_to_remove:
-            self._idempotency.pop(k, None)
+        lock = self._get_lock(context_id)
+        with lock:
+            if context_id not in self._contexts:
+                raise UnknownContextError(context_id)
+            self._contexts.pop(context_id, None)
+            self._compactions.pop(context_id, None)
+            keys_to_remove = [k for k in self._idempotency if k[0] == context_id]
+            for k in keys_to_remove:
+                self._idempotency.pop(k, None)
 
     def exists(self, context_id: str) -> bool:
         return context_id in self._contexts
 
     def touch(self, context_id: str) -> None:
-        ctx = self._get_context(context_id)
-        ctx["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        lock = self._get_lock(context_id)
+        with lock:
+            ctx = self._get_context(context_id)
+            ctx["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     def get_metadata(self, context_id: str) -> dict:
         ctx = self._get_context(context_id)
-        return {
+        res = copy.deepcopy(ctx["metadata"])
+        res.update({
             "status": ctx["status"],
             "created_at": ctx["created_at"],
             "last_accessed_at": ctx["last_accessed_at"],
-            "latest_sequence": ctx["latest_sequence"],
-            **ctx["metadata"]
-        }
+            "latest_sequence": ctx["latest_sequence"]
+        })
+        return res
 
     # Lifecycle methods for test/administration use
     def expire(self, context_id: str) -> None:
-        if context_id not in self._contexts:
-            raise UnknownContextError(context_id)
-        if self._contexts[context_id]["status"] == "purged":
-            raise ContextPurgedError(context_id)
-        self._contexts[context_id]["status"] = "expired"
-        self._contexts[context_id]["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        lock = self._get_lock(context_id)
+        with lock:
+            if context_id not in self._contexts:
+                raise UnknownContextError(context_id)
+            if self._contexts[context_id]["status"] == "purged":
+                raise ContextPurgedError(context_id)
+            self._contexts[context_id]["status"] = "expired"
+            self._contexts[context_id]["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     def mark_purge_eligible(self, context_id: str) -> None:
-        if context_id not in self._contexts:
-            raise UnknownContextError(context_id)
-        if self._contexts[context_id]["status"] == "purged":
-            raise ContextPurgedError(context_id)
-        self._contexts[context_id]["status"] = "purge_eligible"
-        self._contexts[context_id]["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        lock = self._get_lock(context_id)
+        with lock:
+            if context_id not in self._contexts:
+                raise UnknownContextError(context_id)
+            if self._contexts[context_id]["status"] == "purged":
+                raise ContextPurgedError(context_id)
+            self._contexts[context_id]["status"] = "purge_eligible"
+            self._contexts[context_id]["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     def purge(self, context_id: str) -> None:
-        if context_id not in self._contexts:
-            raise UnknownContextError(context_id)
-        if self._contexts[context_id]["status"] == "purged":
-            return
-        ctx = self._contexts[context_id]
-        ctx["events"] = []
-        ctx["event_ids"] = set()
-        ctx["status"] = "purged"
-        ctx["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        self._compactions[context_id] = []
-        keys_to_remove = [k for k in self._idempotency if k[0] == context_id]
-        for k in keys_to_remove:
-            self._idempotency.pop(k, None)
+        lock = self._get_lock(context_id)
+        with lock:
+            if context_id not in self._contexts:
+                raise UnknownContextError(context_id)
+            if self._contexts[context_id]["status"] == "purged":
+                return
+            ctx = self._contexts[context_id]
+            ctx["events"] = []
+            ctx["event_ids"] = set()
+            ctx["status"] = "purged"
+            ctx["last_accessed_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            self._compactions[context_id] = []
+            keys_to_remove = [k for k in self._idempotency if k[0] == context_id]
+            for k in keys_to_remove:
+                self._idempotency.pop(k, None)

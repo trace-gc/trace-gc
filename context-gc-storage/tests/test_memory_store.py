@@ -233,3 +233,53 @@ def test_touch_and_metadata():
     
     meta2 = store.get_metadata(cid)
     assert meta2["last_accessed_at"] != t1
+
+def test_create_already_exists_noop():
+    store = MemoryStore()
+    cid = store.create("custom-id")
+    
+    store.append(cid, [{"id": "e1", "type": "decision", "timestamp": 100, "content": "dec 1"}])
+    assert len(store.load_events(cid)) == 1
+
+    # Re-create should be a silent no-op and preserve data
+    cid2 = store.create("custom-id")
+    assert cid2 == "custom-id"
+    assert len(store.load_events(cid)) == 1
+
+def test_status_check_race():
+    store = MemoryStore()
+    cid = store.create()
+
+    import time
+    errors = []
+    successes = []
+
+    def worker_append():
+        try:
+            for i in range(100):
+                store.append(cid, [{"id": f"race-e{i}", "type": "decision", "timestamp": 100 + i, "content": "race"}])
+                successes.append(i)
+                time.sleep(0.001)
+        except ContextPurgedError:
+            errors.append("purged")
+
+    def worker_purge():
+        time.sleep(0.02)  # Let some appends run
+        store.purge(cid)
+
+    t1 = threading.Thread(target=worker_append)
+    t2 = threading.Thread(target=worker_purge)
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+    # Verify that once the purge committed, subsequent appends raised ContextPurgedError
+    assert "purged" in errors
+    
+    # After purge, all read methods raise ContextPurgedError
+    with pytest.raises(ContextPurgedError):
+        store.load_events(cid)
+
