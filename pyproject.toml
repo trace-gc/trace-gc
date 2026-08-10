@@ -20,6 +20,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/athishio/context-gc"
 Issues = "https://github.com/athishio/context-gc/issues"
+"Web App" = "https://context-gc-web.vercel.app"
 
 [project.scripts]
 context-gc = "context_gc.cli:main"

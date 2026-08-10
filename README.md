@@ -1,6 +1,6 @@
 # Context-GC
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/athishio/context-gc/blob/main/demo/colab_demo.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/athishio/context-gc/blob/main/demo/colab_demo.ipynb) [![Live Web App](https://img.shields.io/badge/Live-Web%20App-blueviolet)](https://context-gc-web.vercel.app)
 
 Deterministic, receipt-preserving context compaction middleware for AI agents with no extra LLM calls.
 
@@ -9,6 +9,11 @@ Deterministic, receipt-preserving context compaction middleware for AI agents wi
 * **Zero added latency from AI calls** using a fully local, deterministic compaction engine.
 * **Retention Policy Control** through optional metadata (`importance`, `tags`, `retain_until`) to protect critical events from being pruned.
 * **CLI Auditing & Inspection** (`context-gc` command) to compact, dry-run, explain pruning decisions, diff prompts, and restore receipts.
+
+## Interactive Demos
+
+*   **Google Colab**: Try out the library and run code examples directly in the [Colab Notebook](https://colab.research.google.com/github/athishio/context-gc/blob/main/demo/colab_demo.ipynb).
+*   **Web App**: Visualize the compaction behavior interactively in your browser at the [Context-GC Web Playground](https://context-gc-web.vercel.app).
 
 ## Description
 
