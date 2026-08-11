@@ -13,4 +13,4 @@ from .middleware import (
     call_anthropic_with_compaction,
     call_openai_with_compaction,
 )
-from .api import TraceGC
+from .api import TraceGC, compact, CompactionResult, Receipt

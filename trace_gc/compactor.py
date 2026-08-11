@@ -26,7 +26,7 @@ def _render_event(event: Dict[str, Any]) -> str:
     etype = event.get("type")
     if etype == "set_var":
         return f"{event.get('key')} = {event.get('value')}"
-    if etype == "decision":
+    if etype in {"decision", "text_chunk"}:
         return event.get("content", "")
     if etype == "tool_call":
         return f"CALL {event.get('tool_name')}({event.get('arguments')})"

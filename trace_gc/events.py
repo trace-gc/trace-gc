@@ -27,7 +27,7 @@ EVENT_TYPES = {
     "set_var", "tool_call", "tool_result", "abandon", "decision",
     "file_read", "file_edit", "command_run", "test_run", "build_run",
     "git_diff", "git_commit", "error", "artifact_created", "requirement",
-    "constraint", "verification"
+    "constraint", "verification", "text_chunk"
 }
 EVENT_STATUS = {"success", "error", None}
 
@@ -52,6 +52,7 @@ _REQUIRED_FIELDS = {
     "requirement": ["id", "type", "timestamp", "content"],
     "constraint": ["id", "type", "timestamp", "content"],
     "verification": ["id", "type", "timestamp", "content", "passed"],
+    "text_chunk": ["id", "type", "timestamp", "content"],
 }
 
 
@@ -119,7 +120,7 @@ def validate_event(event: Dict[str, Any]) -> Dict[str, Any]:
     elif ev_type == "artifact_created":
         _require(isinstance(event["artifact_type"], str) and event["artifact_type"], "'artifact_type' must be a non-empty string")
         _require(isinstance(event["path"], str) and event["path"], "'path' must be a non-empty string")
-    elif ev_type in {"requirement", "constraint"}:
+    elif ev_type in {"requirement", "constraint", "text_chunk"}:
         _require(isinstance(event["content"], str) and event["content"], "'content' must be a non-empty string")
     elif ev_type == "verification":
         _require(isinstance(event["content"], str) and event["content"], "'content' must be a non-empty string")
