@@ -65,7 +65,7 @@ def extract_git_commit(match: re.Match, text: str) -> dict:
 
 registry.register(
     "git_commit",
-    r"(?m)^commit ([0-9a-f]{7,40})(?:\r?\n|\s+)(.*)",
+    r"(?ms)^commit ([0-9a-f]{7,40})(?:\r?\n|\s+)(?:Author:.*?\r?\nDate:.*?\r?\n)?\r?\n?(.*?)(?=(?:^commit [0-9a-f]{7,40}|\Z))",
     20,
     extract_git_commit
 )
@@ -148,6 +148,7 @@ registry.register(
 def extract_log_error(match: re.Match, text: str) -> dict:
     level = match.group(1).upper()
     msg = match.group(2).strip()
+    msg = re.sub(r"^[\s\]:\-]+", "", msg).strip()
     return {
         "type": "error",
         "message": f"[{level}] {msg}" if msg else match.group(0).strip()

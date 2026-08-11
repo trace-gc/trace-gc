@@ -165,7 +165,7 @@ def normalize_input(
             original_types.append("event")
 
         # -- OpenAI‑style Message Dict --
-        elif isinstance(item, dict) and "role" in item:
+        elif isinstance(item, dict) and "role" in item and not isinstance(item.get("content"), list):
             role = item["role"]
             content = item.get("content")
             tool_calls = item.get("tool_calls")
@@ -174,7 +174,7 @@ def normalize_input(
             # Assistant message with tool_calls
             if role == "assistant" and tool_calls:
                 # Text content block (if present)
-                if content:
+                if content and isinstance(content, str):
                     ev_id = f"msg_{idx}_text"
                     ext_events = []
                     if semantic_extraction:
@@ -252,7 +252,7 @@ def normalize_input(
             else:
                 ev_id = f"msg_{idx}"
                 ext_events = []
-                if semantic_extraction and content:
+                if semantic_extraction and isinstance(content, str):
                     ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
 
                 if ext_events:
@@ -398,7 +398,7 @@ def normalize_input(
 
             # AI message with tool calls
             if "AIMessage" in cls_name and tool_calls:
-                if content:
+                if content and isinstance(content, str):
                     ev_id = f"msg_{idx}_text"
                     ext_events = []
                     if semantic_extraction:
@@ -468,7 +468,7 @@ def normalize_input(
             else:
                 ev_id = f"msg_{idx}"
                 ext_events = []
-                if semantic_extraction and content:
+                if semantic_extraction and isinstance(content, str):
                     ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
 
                 if ext_events:

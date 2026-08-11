@@ -62,16 +62,16 @@ def test_openai_messages_compaction():
 def test_empty_assistant_message_dropped():
     messages = [
         {"role": "user", "content": "Hello"},
-        # This assistant message has only duplicate tool calls and no content, so it will be dropped entirely
-        {"role": "assistant", "content": None, "tool_calls": [
-            {"id": "call_dup", "type": "function", "function": {"name": "add", "arguments": {"a": 2, "b": 2}}}
-        ]},
-        {"role": "tool", "tool_call_id": "call_dup", "content": "4"},
         # First occurrence (or kept reference)
         {"role": "assistant", "content": "Kept tool call", "tool_calls": [
             {"id": "call_orig", "type": "function", "function": {"name": "add", "arguments": {"a": 2, "b": 2}}}
         ]},
         {"role": "tool", "tool_call_id": "call_orig", "content": "4"},
+        # This assistant message has only duplicate tool calls and no content, so it will be dropped entirely
+        {"role": "assistant", "content": None, "tool_calls": [
+            {"id": "call_dup", "type": "function", "function": {"name": "add", "arguments": {"a": 2, "b": 2}}}
+        ]},
+        {"role": "tool", "tool_call_id": "call_dup", "content": "4"},
     ]
 
     result = compact(messages)
