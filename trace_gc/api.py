@@ -14,6 +14,7 @@ from .events import validate_event, EVENT_TYPES
 from .graph import StateGraph
 from .compactor import compact_events
 from .receipts import get_receipt as _get_receipt
+from .semantic import extract_semantic_events
 
 
 @dataclass
@@ -34,6 +35,7 @@ class CompactionResult:
     _graph: StateGraph
     _original_inputs: list[Any]
     _original_types: list[str]
+    _semantic_extraction: bool
 
     def get_receipt(self, node_id: str) -> dict:
         """Recover the original normalized event/message for a pruned node."""
@@ -43,7 +45,9 @@ class CompactionResult:
 
     def recover_all(self) -> list[Any]:
         """Recover all original normalized inputs in trace order."""
-        return reconstruct_output(self._original_events, set(), self._original_inputs, self._original_types)
+        return reconstruct_output(
+            self._original_events, set(), self._original_inputs, self._original_types
+        )
 
 
 class TraceGC:
@@ -87,13 +91,14 @@ def is_lc_message(msg: Any) -> bool:
     return hasattr(msg, "content") and not isinstance(msg, dict) and not isinstance(msg, str)
 
 
-def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], list[str]]:
+def normalize_input(
+    messages: Any, semantic_extraction: bool = True
+) -> tuple[list[dict[str, Any]], list[Any], list[str]]:
     """Normalize input messages of various shapes into standard trace events.
 
     Returns:
         (events, original_inputs_in_order, original_types_in_order)
     """
-    # 1. Standardize inputs to list format
     if isinstance(messages, str):
         raw_list = [messages]
     elif isinstance(messages, list):
@@ -101,36 +106,47 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
     elif is_lc_message(messages):
         raw_list = [messages]
     elif isinstance(messages, dict):
-        # Could be a single OpenAI/Anthropic message or direct event
         raw_list = [messages]
     else:
-        # Fallback
         raw_list = [messages]
 
     events: list[dict[str, Any]] = []
     original_inputs: list[Any] = []
     original_types: list[str] = []
 
-    # Map to translate external tool call IDs to event IDs
     tool_call_id_map: dict[str, str] = {}
 
     for idx, item in enumerate(raw_list):
-        # Establish parent reference
         prev_event_id = events[-1]["id"] if events else None
 
         # -- String --
         if isinstance(item, str):
             ev_id = f"txt_{idx}"
-            events.append({
-                "id": ev_id,
-                "type": "text_chunk",
-                "timestamp": idx * 10,
-                "parent_id": prev_event_id,
-                "content": item,
-                "_original_message": item,
-                "_original_type": "string",
-                "_original_index": idx
-            })
+            ext_events = []
+            if semantic_extraction:
+                ext_events = extract_semantic_events(item, prefix_id=ev_id, start_time=idx * 10)
+
+            if ext_events:
+                ext_events[0]["parent_id"] = prev_event_id
+                for ext_ev in ext_events:
+                    ext_ev["_original_message"] = item
+                    ext_ev["_original_type"] = "string"
+                    ext_ev["_original_index"] = idx
+                    ext_ev["_part"] = "extracted"
+                    events.append(ext_ev)
+                prev_event_id = ext_events[-1]["id"]
+            else:
+                events.append({
+                    "id": ev_id,
+                    "type": "text_chunk",
+                    "timestamp": idx * 10,
+                    "parent_id": prev_event_id,
+                    "content": item,
+                    "_original_message": item,
+                    "_original_type": "string",
+                    "_original_index": idx
+                })
+                prev_event_id = ev_id
             original_inputs.append(item)
             original_types.append("string")
 
@@ -160,25 +176,38 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
                 # Text content block (if present)
                 if content:
                     ev_id = f"msg_{idx}_text"
-                    events.append({
-                        "id": ev_id,
-                        "type": "decision",
-                        "timestamp": idx * 10,
-                        "parent_id": prev_event_id,
-                        "content": content,
-                        "_original_message": item,
-                        "_original_type": "openai",
-                        "_original_index": idx,
-                        "_part": "text"
-                    })
-                    prev_event_id = ev_id
+                    ext_events = []
+                    if semantic_extraction:
+                        ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+
+                    if ext_events:
+                        ext_events[0]["parent_id"] = prev_event_id
+                        for ext_ev in ext_events:
+                            ext_ev["_original_message"] = item
+                            ext_ev["_original_type"] = "openai"
+                            ext_ev["_original_index"] = idx
+                            ext_ev["_part"] = "extracted"
+                            events.append(ext_ev)
+                        prev_event_id = ext_events[-1]["id"]
+                    else:
+                        events.append({
+                            "id": ev_id,
+                            "type": "decision",
+                            "timestamp": idx * 10,
+                            "parent_id": prev_event_id,
+                            "content": content,
+                            "_original_message": item,
+                            "_original_type": "openai",
+                            "_original_index": idx,
+                            "_part": "text"
+                        })
+                        prev_event_id = ev_id
 
                 # Tool calls
                 for tc_idx, tc in enumerate(tool_calls):
                     tc_event_id = f"tc_{idx}_{tc_idx}"
                     func = tc.get("function", {})
                     args = func.get("arguments", {})
-                    # Standardize arguments payload parsing
                     if isinstance(args, str):
                         try:
                             args = json.loads(args)
@@ -222,16 +251,31 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
             # User, System, or Assistant without tool calls
             else:
                 ev_id = f"msg_{idx}"
-                events.append({
-                    "id": ev_id,
-                    "type": "decision",
-                    "timestamp": idx * 10,
-                    "parent_id": prev_event_id,
-                    "content": content or "",
-                    "_original_message": item,
-                    "_original_type": "openai",
-                    "_original_index": idx
-                })
+                ext_events = []
+                if semantic_extraction and content:
+                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+
+                if ext_events:
+                    ext_events[0]["parent_id"] = prev_event_id
+                    for ext_ev in ext_events:
+                        ext_ev["_original_message"] = item
+                        ext_ev["_original_type"] = "openai"
+                        ext_ev["_original_index"] = idx
+                        ext_ev["_part"] = "extracted"
+                        events.append(ext_ev)
+                    prev_event_id = ext_events[-1]["id"]
+                else:
+                    events.append({
+                        "id": ev_id,
+                        "type": "decision",
+                        "timestamp": idx * 10,
+                        "parent_id": prev_event_id,
+                        "content": content or "",
+                        "_original_message": item,
+                        "_original_type": "openai",
+                        "_original_index": idx
+                    })
+                    prev_event_id = ev_id
 
             original_inputs.append(item)
             original_types.append("openai")
@@ -243,34 +287,65 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
 
             if isinstance(content, str):
                 ev_id = f"msg_{idx}"
-                events.append({
-                    "id": ev_id,
-                    "type": "decision",
-                    "timestamp": idx * 10,
-                    "parent_id": prev_event_id,
-                    "content": content,
-                    "_original_message": item,
-                    "_original_type": "anthropic",
-                    "_original_index": idx
-                })
+                ext_events = []
+                if semantic_extraction:
+                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+
+                if ext_events:
+                    ext_events[0]["parent_id"] = prev_event_id
+                    for ext_ev in ext_events:
+                        ext_ev["_original_message"] = item
+                        ext_ev["_original_type"] = "anthropic"
+                        ext_ev["_original_index"] = idx
+                        ext_ev["_part"] = "extracted"
+                        events.append(ext_ev)
+                    prev_event_id = ext_events[-1]["id"]
+                else:
+                    events.append({
+                        "id": ev_id,
+                        "type": "decision",
+                        "timestamp": idx * 10,
+                        "parent_id": prev_event_id,
+                        "content": content,
+                        "_original_message": item,
+                        "_original_type": "anthropic",
+                        "_original_index": idx
+                    })
+                    prev_event_id = ev_id
             elif isinstance(content, list):
                 for b_idx, block in enumerate(content):
                     b_type = block.get("type")
                     if b_type == "text":
                         ev_id = f"msg_{idx}_blk_{b_idx}"
-                        events.append({
-                            "id": ev_id,
-                            "type": "decision",
-                            "timestamp": idx * 10 + b_idx,
-                            "parent_id": prev_event_id,
-                            "content": block.get("text", ""),
-                            "_original_message": item,
-                            "_original_type": "anthropic",
-                            "_original_index": idx,
-                            "_part": "block",
-                            "_block_index": b_idx
-                        })
-                        prev_event_id = ev_id
+                        ext_events = []
+                        blk_text = block.get("text", "")
+                        if semantic_extraction and blk_text:
+                            ext_events = extract_semantic_events(blk_text, prefix_id=ev_id, start_time=idx * 10 + b_idx)
+
+                        if ext_events:
+                            ext_events[0]["parent_id"] = prev_event_id
+                            for ext_ev in ext_events:
+                                ext_ev["_original_message"] = item
+                                ext_ev["_original_type"] = "anthropic"
+                                ext_ev["_original_index"] = idx
+                                ext_ev["_part"] = "block_extracted"
+                                ext_ev["_block_index"] = b_idx
+                                events.append(ext_ev)
+                            prev_event_id = ext_events[-1]["id"]
+                        else:
+                            events.append({
+                                "id": ev_id,
+                                "type": "decision",
+                                "timestamp": idx * 10 + b_idx,
+                                "parent_id": prev_event_id,
+                                "content": blk_text,
+                                "_original_message": item,
+                                "_original_type": "anthropic",
+                                "_original_index": idx,
+                                "_part": "block",
+                                "_block_index": b_idx
+                            })
+                            prev_event_id = ev_id
                     elif b_type == "tool_use":
                         tc_id = block.get("id")
                         ev_id = f"tc_{idx}_{b_idx}"
@@ -325,18 +400,32 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
             if "AIMessage" in cls_name and tool_calls:
                 if content:
                     ev_id = f"msg_{idx}_text"
-                    events.append({
-                        "id": ev_id,
-                        "type": "decision",
-                        "timestamp": idx * 10,
-                        "parent_id": prev_event_id,
-                        "content": content,
-                        "_original_message": item,
-                        "_original_type": "langchain",
-                        "_original_index": idx,
-                        "_part": "text"
-                    })
-                    prev_event_id = ev_id
+                    ext_events = []
+                    if semantic_extraction:
+                        ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+
+                    if ext_events:
+                        ext_events[0]["parent_id"] = prev_event_id
+                        for ext_ev in ext_events:
+                            ext_ev["_original_message"] = item
+                            ext_ev["_original_type"] = "langchain"
+                            ext_ev["_original_index"] = idx
+                            ext_ev["_part"] = "extracted"
+                            events.append(ext_ev)
+                        prev_event_id = ext_events[-1]["id"]
+                    else:
+                        events.append({
+                            "id": ev_id,
+                            "type": "decision",
+                            "timestamp": idx * 10,
+                            "parent_id": prev_event_id,
+                            "content": content,
+                            "_original_message": item,
+                            "_original_type": "langchain",
+                            "_original_index": idx,
+                            "_part": "text"
+                        })
+                        prev_event_id = ev_id
 
                 for tc_idx, tc in enumerate(tool_calls):
                     tc_event_id = f"tc_{idx}_{tc_idx}"
@@ -378,16 +467,31 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
             # General messages
             else:
                 ev_id = f"msg_{idx}"
-                events.append({
-                    "id": ev_id,
-                    "type": "decision",
-                    "timestamp": idx * 10,
-                    "parent_id": prev_event_id,
-                    "content": content or "",
-                    "_original_message": item,
-                    "_original_type": "langchain",
-                    "_original_index": idx
-                })
+                ext_events = []
+                if semantic_extraction and content:
+                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+
+                if ext_events:
+                    ext_events[0]["parent_id"] = prev_event_id
+                    for ext_ev in ext_events:
+                        ext_ev["_original_message"] = item
+                        ext_ev["_original_type"] = "langchain"
+                        ext_ev["_original_index"] = idx
+                        ext_ev["_part"] = "extracted"
+                        events.append(ext_ev)
+                    prev_event_id = ext_events[-1]["id"]
+                else:
+                    events.append({
+                        "id": ev_id,
+                        "type": "decision",
+                        "timestamp": idx * 10,
+                        "parent_id": prev_event_id,
+                        "content": content or "",
+                        "_original_message": item,
+                        "_original_type": "langchain",
+                        "_original_index": idx
+                    })
+                    prev_event_id = ev_id
 
             original_inputs.append(item)
             original_types.append("langchain")
@@ -395,16 +499,31 @@ def normalize_input(messages: Any) -> tuple[list[dict[str, Any]], list[Any], lis
         # -- Unsupported / Catch-all --
         else:
             ev_id = f"msg_{idx}"
-            events.append({
-                "id": ev_id,
-                "type": "decision",
-                "timestamp": idx * 10,
-                "parent_id": prev_event_id,
-                "content": str(item),
-                "_original_message": item,
-                "_original_type": "string",
-                "_original_index": idx
-            })
+            ext_events = []
+            if semantic_extraction:
+                ext_events = extract_semantic_events(str(item), prefix_id=ev_id, start_time=idx * 10)
+
+            if ext_events:
+                ext_events[0]["parent_id"] = prev_event_id
+                for ext_ev in ext_events:
+                    ext_ev["_original_message"] = item
+                    ext_ev["_original_type"] = "string"
+                    ext_ev["_original_index"] = idx
+                    ext_ev["_part"] = "extracted"
+                    events.append(ext_ev)
+                prev_event_id = ext_events[-1]["id"]
+            else:
+                events.append({
+                    "id": ev_id,
+                    "type": "decision",
+                    "timestamp": idx * 10,
+                    "parent_id": prev_event_id,
+                    "content": str(item),
+                    "_original_message": item,
+                    "_original_type": "string",
+                    "_original_index": idx
+                })
+                prev_event_id = ev_id
             original_inputs.append(item)
             original_types.append("string")
 
@@ -418,7 +537,6 @@ def reconstruct_output(
     original_types: list[str]
 ) -> list[Any]:
     """Reconstruct compacted messages / strings / events in their original shape."""
-    # Group normalized events by their original input index
     events_by_idx: dict[int, list[dict]] = {}
     for ev in original_events:
         idx = ev["_original_index"]
@@ -437,8 +555,7 @@ def reconstruct_output(
 
         # -- String --
         if orig_type == "string":
-            ev = ev_list[0]
-            if ev["id"] not in pruned_ids:
+            if any(ev["id"] not in pruned_ids for ev in ev_list):
                 reconstructed.append(orig_input)
 
         # -- Direct Event --
@@ -451,11 +568,17 @@ def reconstruct_output(
         elif orig_type == "openai":
             role = orig_input.get("role")
             if role == "assistant" and orig_input.get("tool_calls"):
-                # Assistant with tool calls
                 text_part = next((e for e in ev_list if e.get("_part") == "text"), None)
                 tc_parts = [e for e in ev_list if e.get("_part") == "tool_call"]
+                ext_parts = [e for e in ev_list if e.get("_part") == "extracted"]
 
-                has_text = text_part and (text_part["id"] not in pruned_ids)
+                # Text or extracted parts survived
+                has_text = False
+                if text_part:
+                    has_text = text_part["id"] not in pruned_ids
+                elif ext_parts:
+                    has_text = any(e["id"] not in pruned_ids for e in ext_parts)
+
                 surviving_tcs = []
                 for tc_part in tc_parts:
                     if tc_part["id"] not in pruned_ids:
@@ -474,28 +597,28 @@ def reconstruct_output(
                         new_msg.pop("tool_calls", None)
                     reconstructed.append(new_msg)
             elif role == "tool":
-                # Tool result
                 ev = ev_list[0]
                 if ev["id"] not in pruned_ids:
                     reconstructed.append(orig_input)
             else:
-                # Other OpenAI messages
-                ev = ev_list[0]
-                if ev["id"] not in pruned_ids:
+                if any(ev["id"] not in pruned_ids for ev in ev_list):
                     reconstructed.append(orig_input)
 
         # -- Anthropic --
         elif orig_type == "anthropic":
             content = orig_input.get("content")
             if isinstance(content, str):
-                ev = ev_list[0]
-                if ev["id"] not in pruned_ids:
+                if any(ev["id"] not in pruned_ids for ev in ev_list):
                     reconstructed.append(orig_input)
             elif isinstance(content, list):
                 surviving_blocks = []
                 for b_idx, block in enumerate(content):
-                    ev = next((e for e in ev_list if e.get("_part") == "block" and e.get("_block_index") == b_idx), None)
-                    if ev and (ev["id"] not in pruned_ids):
+                    b_evs = [
+                        e for e in ev_list 
+                        if (e.get("_part") == "block" and e.get("_block_index") == b_idx)
+                        or (e.get("_part") == "block_extracted" and e.get("_block_index") == b_idx)
+                    ]
+                    if b_evs and any(e["id"] not in pruned_ids for e in b_evs):
                         surviving_blocks.append(block)
                 if surviving_blocks:
                     new_msg = orig_input.copy()
@@ -508,8 +631,14 @@ def reconstruct_output(
             if "AIMessage" in cls_name and getattr(orig_input, "tool_calls", None):
                 text_part = next((e for e in ev_list if e.get("_part") == "text"), None)
                 tc_parts = [e for e in ev_list if e.get("_part") == "tool_call"]
+                ext_parts = [e for e in ev_list if e.get("_part") == "extracted"]
 
-                has_text = text_part and (text_part["id"] not in pruned_ids)
+                has_text = False
+                if text_part:
+                    has_text = text_part["id"] not in pruned_ids
+                elif ext_parts:
+                    has_text = any(e["id"] not in pruned_ids for e in ext_parts)
+
                 surviving_tcs = []
                 for tc_part in tc_parts:
                     if tc_part["id"] not in pruned_ids:
@@ -518,9 +647,14 @@ def reconstruct_output(
 
                 if has_text or surviving_tcs:
                     content_val = getattr(orig_input, "content", "") if has_text else ""
-                    kwargs = {k: v for k, v in orig_input.__dict__.items() if k not in {"content", "tool_calls"}}
+                    kwargs = {
+                        k: v for k, v in orig_input.__dict__.items() 
+                        if k not in {"content", "tool_calls"}
+                    }
                     if surviving_tcs:
-                        new_msg = orig_input.__class__(content=content_val, tool_calls=surviving_tcs, **kwargs)
+                        new_msg = orig_input.__class__(
+                            content=content_val, tool_calls=surviving_tcs, **kwargs
+                        )
                     else:
                         new_msg = orig_input.__class__(content=content_val, **kwargs)
                     reconstructed.append(new_msg)
@@ -529,33 +663,27 @@ def reconstruct_output(
                 if ev["id"] not in pruned_ids:
                     reconstructed.append(orig_input)
             else:
-                ev = ev_list[0]
-                if ev["id"] not in pruned_ids:
+                if any(ev["id"] not in pruned_ids for ev in ev_list):
                     reconstructed.append(orig_input)
 
     return reconstructed
 
 
-def compact(messages: Any) -> CompactionResult:
+def compact(messages: Any, semantic_extraction: bool = True) -> CompactionResult:
     """Run the deterministic compaction pipeline on a universal input messages list."""
-    # 1. Normalize inputs to trace-gc events
-    events, orig_inputs, orig_types = normalize_input(messages)
+    events, orig_inputs, orig_types = normalize_input(messages, semantic_extraction=semantic_extraction)
 
-    # 2. Run deterministic compaction
     result = compact_events(events)
     graph = result["graph"]
     pruned_ids = set(result["pruned_ids"])
 
-    # 3. Create receipt objects
     receipts: list[Receipt] = []
     for pid in result["pruned_ids"]:
         reason = graph.prune_reasons.get(pid, "pruned")
         receipts.append(Receipt(node_id=pid, reason=reason, event=graph.nodes[pid]))
 
-    # 4. Reconstruct output
     compacted_messages = reconstruct_output(events, pruned_ids, orig_inputs, orig_types)
 
-    # 5. Extract token metrics and compaction ratio
     tokens_before = result["tokens_before"]
     tokens_after = result["tokens_after"]
     ratio = float(1.0 - (tokens_after / tokens_before)) if tokens_before > 0 else 0.0
@@ -569,5 +697,6 @@ def compact(messages: Any) -> CompactionResult:
         _original_events=events,
         _graph=graph,
         _original_inputs=orig_inputs,
-        _original_types=orig_types
+        _original_types=orig_types,
+        _semantic_extraction=semantic_extraction
     )

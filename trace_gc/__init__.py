@@ -14,3 +14,4 @@ from .middleware import (
     call_openai_with_compaction,
 )
 from .api import TraceGC, compact, CompactionResult, Receipt
+from .semantic import extract_semantic_events
