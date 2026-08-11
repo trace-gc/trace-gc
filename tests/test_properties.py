@@ -1,9 +1,9 @@
 import pytest
 import json
 from hypothesis import given, strategies as st
-from context_gc.graph import StateGraph
-from context_gc.compactor import compact_events, _render_event
-from context_gc.receipts import get_receipt
+from trace_gc.graph import StateGraph
+from trace_gc.compactor import compact_events, _render_event
+from trace_gc.receipts import get_receipt
 
 @st.composite
 def event_trace_strategy(draw):

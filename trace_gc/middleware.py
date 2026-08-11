@@ -1,4 +1,4 @@
-# context_gc/middleware.py
+# trace_gc/middleware.py
 """Simple middleware that wraps an LLM‑style call with deterministic compaction.
 
 The user supplies a callable ``llm_fn`` that expects a list of events and returns a
@@ -15,12 +15,12 @@ from __future__ import annotations
 from typing import Callable, List, Dict, Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .api import ContextGC
+    from .api import TraceGC
 
 from .compactor import compact_events
 
 
-class ContextGCMiddleware:
+class TraceGCMiddleware:
     """Callable class that applies context‑gc before invoking an LLM function."""
 
     def __init__(self, llm_fn: Callable[[List[Dict[str, Any]]], Any]):
@@ -43,7 +43,7 @@ class ContextGCMiddleware:
 
 
 def call_anthropic_with_compaction(
-    context_gc: ContextGC,
+    trace_gc: TraceGC,
     model: str,
     user_message: str,
     api_key: Optional[str] = None
@@ -56,7 +56,7 @@ def call_anthropic_with_compaction(
     import os
     import anthropic
 
-    compaction_result = context_gc.compact()
+    compaction_result = trace_gc.compact()
     compacted_prompt = compaction_result["prompt"]
 
     key = api_key or os.environ.get("ANTHROPIC_API_KEY")
@@ -83,7 +83,7 @@ def call_anthropic_with_compaction(
 
 
 def call_openai_with_compaction(
-    context_gc: ContextGC,
+    trace_gc: TraceGC,
     model: str,
     user_message: str,
     api_key: Optional[str] = None
@@ -96,7 +96,7 @@ def call_openai_with_compaction(
     import os
     import openai
 
-    compaction_result = context_gc.compact()
+    compaction_result = trace_gc.compact()
     compacted_prompt = compaction_result["prompt"]
 
     key = api_key or os.environ.get("OPENAI_API_KEY")

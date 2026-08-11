@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "context-gc"
+name = "trace-gc"
 version = "0.3.0"
 description = "Deterministic, receipt-preserving context compaction library for LLM agents"
 readme = "README.md"
@@ -18,12 +18,12 @@ authors = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/athishio/context-gc"
-Issues = "https://github.com/athishio/context-gc/issues"
-"Web App" = "https://context-gc-web.vercel.app"
+Homepage = "https://github.com/athishio/trace-gc"
+Issues = "https://github.com/athishio/trace-gc/issues"
+"Web App" = "https://trace-gc-web.vercel.app"
 
 [project.scripts]
-context-gc = "context_gc.cli:main"
+trace-gc = "trace_gc.cli:main"
 
 [project.optional-dependencies]
 test = [
@@ -32,4 +32,4 @@ test = [
 ]
 
 [tool.setuptools]
-packages = ["context_gc"]
+packages = ["trace_gc"]

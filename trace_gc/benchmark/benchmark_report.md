@@ -4,7 +4,7 @@ This report presents a comparative evaluation of context compaction methods for 
 
 ## Executive Summary
 
-1. **Standout Performer: `context_gc_pipeline`**
+1. **Standout Performer: `trace_gc_pipeline`**
    * Achieved **100% accuracy** on all evaluation probes (Recall, Artifact, Continuation, and Decision) at every trace length.
    * Reduced prompt size by **~21% in tokens** compared to `full_history` on LONG traces.
    * Completely **deterministic** (yes) with zero latency overhead (averaging ~0.0028 seconds), offering full-history accuracy at lower cost with reproducible outputs.
@@ -24,11 +24,11 @@ This report presents a comparative evaluation of context compaction methods for 
 
 ### Methodology Note: Exact Substring Matching
 > [!NOTE]
-> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `context_gc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](https://github.com/athishio/context-gc/blob/main/WRITEUP.md#supplementary-finding-live-answer-quality-check) section of `WRITEUP.md`. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
+> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `trace_gc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](https://github.com/athishio/trace-gc/blob/main/WRITEUP.md#supplementary-finding-live-answer-quality-check) section of `WRITEUP.md`. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
 
 ### Methodology Note: Cycle Collapse Verification
 > [!NOTE]
-> Cycle-collapsing behavior (defensive graph loop collapsing) is verified separately under synthetic cyclic traces in [`tests/test_topo_sampler.py`](file:///e:/Context-GC/tests/test_topo_sampler.py). All comparative benchmark numbers are scored against natural, un-injected event traces.
+> Cycle-collapsing behavior (defensive graph loop collapsing) is verified separately under synthetic cyclic traces in [`tests/test_topo_sampler.py`](file:///e:/TraceGC/tests/test_topo_sampler.py). All comparative benchmark numbers are scored against natural, un-injected event traces.
 
 
 ### Comparative Benchmark — SHORT Traces
@@ -41,7 +41,7 @@ This report presents a comparative evaluation of context compaction methods for 
 | ai_summarize_single (pro)      | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
 | ai_summarize_recursive (flash) | skip       | skip            | $0.000000 | skip        | skip          | skip              | skip          | n/a           |
 | ai_summarize_recursive (pro)   | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
-| context_gc_pipeline            | 75.3       | 0.0011          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
+| trace_gc_pipeline            | 75.3       | 0.0011          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
 
 ### Comparative Benchmark — MEDIUM Traces
 | Method | Avg Tokens | Avg Latency (s) | Cost ($) | Recall Acc. | Artifact Acc. | Continuation Acc. | Decision Acc. | Deterministic |
@@ -53,7 +53,7 @@ This report presents a comparative evaluation of context compaction methods for 
 | ai_summarize_single (pro)      | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
 | ai_summarize_recursive (flash) | 131.0      | 21.1568         | $0.000082 | 0.0%        | 66.7%         | 100.0%            | 0.0%          | no            |
 | ai_summarize_recursive (pro)   | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
-| context_gc_pipeline            | 299.0      | 0.0017          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
+| trace_gc_pipeline            | 299.0      | 0.0017          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
 
 ### Comparative Benchmark — LONG Traces
 | Method | Avg Tokens | Avg Latency (s) | Cost ($) | Recall Acc. | Artifact Acc. | Continuation Acc. | Decision Acc. | Deterministic |
@@ -65,6 +65,6 @@ This report presents a comparative evaluation of context compaction methods for 
 | ai_summarize_single (pro)      | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
 | ai_summarize_recursive (flash) | 219.2      | 42.6211*        | $0.000199 | 100.0%      | 0.0%          | 100.0%            | 0.0%          | no            |
 | ai_summarize_recursive (pro)   | not run — Pro tier unavailable (0 req/day quota) | | | | | | | |
-| context_gc_pipeline            | 1028.3     | 0.0028          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
+| trace_gc_pipeline            | 1028.3     | 0.0028          | $0.000000 | 100.0%      | 100.0%        | 100.0%            | 100.0%        | yes           |
 
 *\*One run included a 75s API rate-limit retry wait; latency figures exclude this wait time to reflect model response time rather than our own quota constraints. (Including the retry wait, average latency is 50.9544s).*

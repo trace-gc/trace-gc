@@ -54,7 +54,7 @@
     {
       "fixture": "coding_agent_short.json",
       "length": "short",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 68,
@@ -174,7 +174,7 @@
     {
       "fixture": "coding_agent_long.json",
       "length": "long",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 942,
@@ -243,7 +243,7 @@
     {
       "fixture": "research_agent_short.json",
       "length": "short",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 77,
@@ -363,7 +363,7 @@
     {
       "fixture": "research_agent_long.json",
       "length": "long",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 1007,
@@ -432,7 +432,7 @@
     {
       "fixture": "customer_support_short.json",
       "length": "short",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 81,
@@ -552,7 +552,7 @@
     {
       "fixture": "customer_support_long.json",
       "length": "long",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 1136,
@@ -1272,7 +1272,7 @@
     {
       "fixture": "coding_agent_medium.json",
       "length": "medium",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 278,
@@ -1290,7 +1290,7 @@
     {
       "fixture": "research_agent_medium.json",
       "length": "medium",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 314,
@@ -1308,7 +1308,7 @@
     {
       "fixture": "customer_support_medium.json",
       "length": "medium",
-      "method": "context_gc_pipeline",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
       "tokens": 305,

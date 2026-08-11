@@ -1,7 +1,7 @@
 import pytest
-from context_gc.graph import StateGraph
-from context_gc.dedup_engine import deduplicate_tool_calls
-from context_gc.receipts import get_receipt
+from trace_gc.graph import StateGraph
+from trace_gc.dedup_engine import deduplicate_tool_calls
+from trace_gc.receipts import get_receipt
 
 def test_dedup_identical_tool_calls():
     graph = StateGraph()

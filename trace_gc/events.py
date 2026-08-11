@@ -1,4 +1,4 @@
-# context_gc/events.py
+# trace_gc/events.py
 """Event schema definitions and validation utilities.
 
 Each event is represented as a ``dict`` with at least the following keys:

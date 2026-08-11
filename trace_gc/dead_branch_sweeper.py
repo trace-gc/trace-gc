@@ -1,4 +1,4 @@
-# context_gc/dead_branch_sweeper.py
+# trace_gc/dead_branch_sweeper.py
 """Dead‑branch sweeper – prunes abandoned execution paths.
 
 Walks sequence edges starting from abandon event targets to prune entire abandoned sub-branches.

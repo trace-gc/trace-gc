@@ -1,4 +1,4 @@
-# context_gc/override_engine.py
+# trace_gc/override_engine.py
 """Override engine – identifies and prunes superseded ``set_var`` updates.
 
 Retains only the latest set_var event for each key (by timestamp) among surviving 

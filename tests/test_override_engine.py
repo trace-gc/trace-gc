@@ -1,6 +1,6 @@
 import pytest
-from context_gc.graph import StateGraph
-from context_gc.override_engine import apply_overrides
+from trace_gc.graph import StateGraph
+from trace_gc.override_engine import apply_overrides
 
 def test_apply_overrides():
     graph = StateGraph()

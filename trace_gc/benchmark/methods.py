@@ -1,17 +1,17 @@
-# context_gc/benchmark/methods.py
+# trace_gc/benchmark/methods.py
 """Compaction methods used in the comparative benchmark.
 
 Defines the six compaction strategies: full_history, event-count truncation,
 token-count truncation, single AI summary, recursive AI summary, and
-context-gc deterministic pipeline. Includes robust rate-limit retry logic.
+trace-gc deterministic pipeline. Includes robust rate-limit retry logic.
 """
 
 from __future__ import annotations
 
 import time
 from typing import List, Dict, Any, Tuple
-from context_gc import compact_events
-from context_gc.compactor import _render_event
+from trace_gc import compact_events
+from trace_gc.compactor import _render_event
 
 
 def generate_with_retry(gemini_client: Any, model: str, contents: str, config: dict) -> Any:
@@ -173,8 +173,8 @@ def method_ai_summarize_recursive(
     return summary, tokens, elapsed
 
 
-def method_context_gc_pipeline(events: List[Dict[str, Any]]) -> Tuple[str, int, float]:
-    """Context-GC deterministic pipeline: applies DFS sweeper, overrides, dedup, and SCC collapse."""
+def method_trace_gc_pipeline(events: List[Dict[str, Any]]) -> Tuple[str, int, float]:
+    """TraceGC deterministic pipeline: applies DFS sweeper, overrides, dedup, and SCC collapse."""
     start = time.perf_counter()
     result = compact_events(events)
     elapsed = time.perf_counter() - start

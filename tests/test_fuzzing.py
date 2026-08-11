@@ -1,7 +1,7 @@
 import pytest
 import time
-from context_gc.compactor import compact_events
-from context_gc.events import validate_event
+from trace_gc.compactor import compact_events
+from trace_gc.events import validate_event
 
 def test_missing_required_fields():
     # Missing 'timestamp' and 'key'/'value' for set_var

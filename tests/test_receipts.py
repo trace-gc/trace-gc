@@ -1,6 +1,6 @@
 import pytest
-from context_gc.graph import StateGraph
-from context_gc.receipts import collect_receipts, get_receipt
+from trace_gc.graph import StateGraph
+from trace_gc.receipts import collect_receipts, get_receipt
 
 def test_receipts():
     graph = StateGraph()

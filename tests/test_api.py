@@ -1,8 +1,8 @@
 import pytest
-from context_gc import ContextGC
+from trace_gc import TraceGC
 
-def test_context_gc_incremental():
-    client = ContextGC()
+def test_trace_gc_incremental():
+    client = TraceGC()
     
     # 16 events added incrementally
     events = [
@@ -69,8 +69,8 @@ def test_context_gc_incremental():
         assert rcpt.get("pruned") is True
 
 
-def test_context_gc_nonexistent_parent_raises():
-    client = ContextGC()
+def test_trace_gc_nonexistent_parent_raises():
+    client = TraceGC()
     client.add_event({"id": "e001", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Root"})
     
     with pytest.raises(ValueError) as excinfo:

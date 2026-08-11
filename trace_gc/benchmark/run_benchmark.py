@@ -1,7 +1,7 @@
-# context_gc/benchmark/run_benchmark.py
+# trace_gc/benchmark/run_benchmark.py
 """Benchmark runner script with checkpoint/resume and daily rate limit budgeting.
 
-Maintains context_gc/benchmark/checkpoint.json. Runs free local methods to
+Maintains trace_gc/benchmark/checkpoint.json. Runs free local methods to
 completion immediately, prioritizes breadth-first (Run 1) over depth (Run 2/3),
 and stops cleanly if daily quota is reached.
 """
@@ -18,15 +18,15 @@ from typing import Dict, List, Any
 # Load path for local imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from context_gc import ContextGC, compact_events
-from context_gc.receipts import get_receipt
-from context_gc.benchmark.methods import (
+from trace_gc import TraceGC, compact_events
+from trace_gc.receipts import get_receipt
+from trace_gc.benchmark.methods import (
     method_full_history,
     method_truncate_by_event_count,
     method_truncate_by_token_count,
     method_ai_summarize_single,
     method_ai_summarize_recursive,
-    method_context_gc_pipeline,
+    method_trace_gc_pipeline,
 )
 
 CHECKPOINT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "checkpoint.json"))
@@ -257,11 +257,11 @@ def run_benchmark(simulate: bool = False):
             save_checkpoint(completed)
             print(f"Completed local truncate_by_token_count for {filename}", flush=True)
 
-        # Context-GC Pipeline
-        if not is_completed(filename, "context_gc_pipeline", "n/a", 1):
+        # TraceGC Pipeline
+        if not is_completed(filename, "trace_gc_pipeline", "n/a", 1):
             def run_pipeline():
                 st = time.perf_counter()
-                gc_client = ContextGC()
+                gc_client = TraceGC()
                 for ev in clean_events:
                     gc_client.add_event(ev)
                 res = gc_client.compact()
@@ -277,7 +277,7 @@ def run_benchmark(simulate: bool = False):
             completed.append({
                 "fixture": filename,
                 "length": length_bucket,
-                "method": "context_gc_pipeline",
+                "method": "trace_gc_pipeline",
                 "tier": "n/a",
                 "run": 1,
                 "tokens": t1,
@@ -287,7 +287,7 @@ def run_benchmark(simulate: bool = False):
                 "determinism": det_check
             })
             save_checkpoint(completed)
-            print(f"Completed local context_gc_pipeline for {filename}", flush=True)
+            print(f"Completed local trace_gc_pipeline for {filename}", flush=True)
 
     if simulate:
         print("\n=== Simulation Mode Complete: Checkpoint logic verified successfully. ===", flush=True)
@@ -558,7 +558,7 @@ def print_tables(completed: List[Dict[str, Any]]):
             "ai_summarize_single (pro)",
             "ai_summarize_recursive (flash)",
             "ai_summarize_recursive (pro)",
-            "context_gc_pipeline"
+            "trace_gc_pipeline"
         ]
         
         for m in methods_list:

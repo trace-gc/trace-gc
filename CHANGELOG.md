@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] - 2026-08-08
 
 ### Changed
-- **Benchmark Correction**: Removed synthetic cross-edge injection from the comparative benchmark runner for `context_gc_pipeline`, scoring all methods on natural traces. Corrected the medium-tier token count average to **299.0** tokens.
+- **Benchmark Correction**: Removed synthetic cross-edge injection from the comparative benchmark runner for `trace_gc_pipeline`, scoring all methods on natural traces. Corrected the medium-tier token count average to **299.0** tokens.
 - **Cycle Collapse Note**: Added methodology notes indicating cycle collapse is verified separately in unit tests (`tests/test_topo_sampler.py`).
 - **Docs**: Changed relative markdown links in `README.md` and `benchmark_report.md` to absolute GitHub paths to prevent broken links when rendered on PyPI.
 
@@ -29,10 +29,10 @@ All notable changes to this project will be documented in this file.
   - Added `is_protected(event)` check inside override, dead-branch sweeper, and deduplication engines to prevent pruning of critical events.
   - Added `protected` tracking inside `StateGraph` along with audit/reason logs for compaction (`prune_reasons`, `protected_reasons`).
 - **CLI Management Tool**:
-  - `context-gc compact [--dry-run] <trace>`: Compacts events; dry-run mode displays prune/protect actions and token savings without outputting the prompt.
-  - `context-gc explain <trace> <node_id>`: Displays full event data, status (pruned/protected/kept), and details of what would/did override or abandon the node.
-  - `context-gc restore <trace> <node_id>`: Recovers and prints the original event payload of a pruned node.
-  - `context-gc diff <trace>`: Displays a unified diff showing original vs compacted prompt.
+  - `trace-gc compact [--dry-run] <trace>`: Compacts events; dry-run mode displays prune/protect actions and token savings without outputting the prompt.
+  - `trace-gc explain <trace> <node_id>`: Displays full event data, status (pruned/protected/kept), and details of what would/did override or abandon the node.
+  - `trace-gc restore <trace> <node_id>`: Recovers and prints the original event payload of a pruned node.
+  - `trace-gc diff <trace>`: Displays a unified diff showing original vs compacted prompt.
 
 ## [0.1.1] - 2026-08-06
 

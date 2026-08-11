@@ -1,7 +1,7 @@
 import pytest
 import hashlib
-from context_gc.graph import StateGraph
-from context_gc.topo_sampler import collapse_cycles, _deterministic_cluster_id
+from trace_gc.graph import StateGraph
+from trace_gc.topo_sampler import collapse_cycles, _deterministic_cluster_id
 
 def test_deterministic_cluster_id():
     members = ["c", "a", "b"]

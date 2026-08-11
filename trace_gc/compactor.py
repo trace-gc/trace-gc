@@ -1,4 +1,4 @@
-# context_gc/compactor.py
+# trace_gc/compactor.py
 """Compaction orchestrator – builds the graph, runs pruning stages, and renders a prompt.
 
 The public entry point is :func:`compact_events` which accepts a list of event

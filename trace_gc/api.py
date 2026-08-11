@@ -1,5 +1,5 @@
-# context_gc/api.py
-"""Incremental-friendly API client for Context-GC.
+# trace_gc/api.py
+"""Incremental-friendly API client for TraceGC.
 
 Provides the class-based interface to manage and compact event traces incrementally.
 """
@@ -13,8 +13,8 @@ from .compactor import compact_events
 from .receipts import get_receipt as _get_receipt
 
 
-class ContextGC:
-    """Incremental API client for Context-GC.
+class TraceGC:
+    """Incremental API client for TraceGC.
 
     Manages a running history of events for an LLM agent, allowing events to be
     added one by one and compacted on demand.

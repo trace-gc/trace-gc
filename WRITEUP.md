@@ -1,6 +1,6 @@
-# Technical Writeup: Context-GC Compaction Library
+# Technical Writeup: TraceGC Compaction Library
 
-This document provides a comprehensive technical overview of Context-GC, a framework-agnostic, zero-dependency Python library designed for deterministic, receipt-preserving context compaction in stateful AI agent workflows.
+This document provides a comprehensive technical overview of TraceGC, a framework-agnostic, zero-dependency Python library designed for deterministic, receipt-preserving context compaction in stateful AI agent workflows.
 
 ---
 
@@ -12,13 +12,13 @@ As AI agents transition from simple single-turn query-response systems to long-r
 2.  **Attention Dilution**: Long-context models, while capable of processing large inputs, suffer from "needle in a haystack" retrieval degradation. Relevant state variables, final decisions, and key identifiers are easily lost when buried under hundreds of lines of obsolete tool results.
 3.  **Non-Determinism and Context Poisoning**: The naive solution to context bloat is periodically calling a model to summarize past history (AI-driven summarization). However, LLM-based summarizers are non-deterministic, slow, expensive, and prone to hallucination. An LLM summarizer might inadvertently drop a critical identifier, misreport a state variable, or inject false context, leading to agent failure or loops.
 
-Context-GC solves these problems by modeling the agent's history as a directed multigraph and applying deterministic graph-pruning algorithms. It prunes redundant and obsolete data with **zero extra LLM calls**, ensuring complete determinism, zero latency overhead, and 100% accurate receipt-based state recovery.
+TraceGC solves these problems by modeling the agent's history as a directed multigraph and applying deterministic graph-pruning algorithms. It prunes redundant and obsolete data with **zero extra LLM calls**, ensuring complete determinism, zero latency overhead, and 100% accurate receipt-based state recovery.
 
 ---
 
 ## 2. Core Architecture: Deterministic Graph-Based Pruning
 
-Instead of treating the history log as a flat text stream, Context-GC structures the trace as a directed multigraph: the **StateGraph**. In the StateGraph, each historical event represents a node, and directed edges represent semantic or temporal dependencies.
+Instead of treating the history log as a flat text stream, TraceGC structures the trace as a directed multigraph: the **StateGraph**. In the StateGraph, each historical event represents a node, and directed edges represent semantic or temporal dependencies.
 
 The compaction process operates via a linear pipeline that executes four deterministic stages on the graph, followed by receipt generation and final prompt rendering.
 
@@ -90,7 +90,7 @@ The Topological Sampler runs Tarjan's strongly connected components (SCC) algori
 
 #### **Rigorous Finding: Unreachability through Standard API**
 During testing, an audit of the graph traversal code revealed a structural invariant: **cycles can never form under standard public API usage**.
-Because `ContextGC.add_event()` validates that an event's `parent_id` already exists in the graph:
+Because `TraceGC.add_event()` validates that an event's `parent_id` already exists in the graph:
 ```python
 if parent not in self.graph.nodes:
     raise ValueError("parent_id not found in graph — events must be added in dependency order")
@@ -158,9 +158,9 @@ Simulates a support agent processing a refund ticket.
 
 ### Methodology Note: Exact Substring Matching
 > [!NOTE]
-> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `context_gc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](#supplementary-finding-live-answer-quality-check) section. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
+> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `trace_gc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](#supplementary-finding-live-answer-quality-check) section. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
 
-To move beyond a single hand-tuned demo, Context-GC was benchmarked
+To move beyond a single hand-tuned demo, TraceGC was benchmarked
 against three alternatives — full history (no compaction), naive
 truncation, and AI-driven summarization — across 9 fixtures (3 agent
 types × 3 trace lengths), using real live API calls against Gemini 3.6
@@ -174,7 +174,7 @@ AI-summarization does better on recall but consistently loses the
 every trace length tested — while adding real cost, multi-second
 latency, and non-determinism.
 
-**Context-GC was the only method to score 100% across all four semantic
+**TraceGC was the only method to score 100% across all four semantic
 probes — recall, artifact-tracking, continuation, and decision — on
 every trace length, with zero cost, sub-millisecond latency, and full
 determinism.** Its compression ratio is more conservative than the
@@ -214,9 +214,9 @@ over.
 
 ## 7. Limitations and Future Work
 
-While Context-GC provides a powerful, deterministic alternative to lossy summarization, it has explicit structural limitations:
+While TraceGC provides a powerful, deterministic alternative to lossy summarization, it has explicit structural limitations:
 
-1.  **Structured Events Only**: Compaction relies entirely on typed event metadata. If an agent records its history as a single freeform text log, Context-GC cannot reconstruct the dependency graph.
+1.  **Structured Events Only**: Compaction relies entirely on typed event metadata. If an agent records its history as a single freeform text log, TraceGC cannot reconstruct the dependency graph.
 2.  **No Incremental Recomputation**: Calling `.compact()` rebuilds the entire state graph from scratch. For very long traces, this incurs linear processing overhead on each call. Future versions will implement true incremental compilation where updates are applied to the active graph in-place.
 3.  **DAG Invariant**: The topological sampler requires sequence edges to be acyclic. While cycle collapse handles cycles, any sequence relationships that cannot be resolved topologically will block prompt rendering.
 
@@ -232,11 +232,11 @@ Managing long-context window limits and token costs in agentic systems is an act
 *   **Hosted Memory & Vector Databases**: SaaS platforms and databases that offer retrieval-augmented generation (RAG) and search workflows over raw text memories.
 *   **AI-Driven Summarization**: Naive LLM calls that periodically summarize history logs into shorter paragraphs.
 
-### Headroom vs. Context-GC
+### Headroom vs. TraceGC
 
-A primary architectural distinction exists between **Headroom** and **Context-GC**:
+A primary architectural distinction exists between **Headroom** and **TraceGC**:
 *   **Headroom** compresses the *content* of individual messages/tool-outputs as they arrive—routing JSON/code/logs/text to per-type compressors (one of which, *Kompress*, uses a trained ML model, not pure determinism), and explicitly leaves prior conversation history untouched to preserve provider KV-cache hits. Headroom decides what to keep small on the way in.
-*   **Context-GC** solves a different layer: given an agent's already-accumulated structured event history, it identifies which parts are now dead (superseded, abandoned, or cyclical) and structurally removes them. Context-GC decides what should still exist at all once it is already there.
+*   **TraceGC** solves a different layer: given an agent's already-accumulated structured event history, it identifies which parts are now dead (superseded, abandoned, or cyclical) and structurally removes them. TraceGC decides what should still exist at all once it is already there.
 
-The two approaches are complementary rather than competing: Headroom shrinks new incoming tool outputs, while Context-GC prunes stale state from history. Furthermore, Context-GC's entire pipeline has zero ML/AI models anywhere, including in the pruning logic itself, whereas Headroom's is deterministic for some content types but uses a trained model for general text. Additionally, Headroom's memory-layer deduplication explicitly relies on an LLM call to judge whether two facts should be merged ('LLM-Mediated Dedup'), whereas Context-GC's deduplication is exact-match on tool name, arguments, and result — fully deterministic, with no model call anywhere in the decision.
+The two approaches are complementary rather than competing: Headroom shrinks new incoming tool outputs, while TraceGC prunes stale state from history. Furthermore, TraceGC's entire pipeline has zero ML/AI models anywhere, including in the pruning logic itself, whereas Headroom's is deterministic for some content types but uses a trained model for general text. Additionally, Headroom's memory-layer deduplication explicitly relies on an LLM call to judge whether two facts should be merged ('LLM-Mediated Dedup'), whereas TraceGC's deduplication is exact-match on tool name, arguments, and result — fully deterministic, with no model call anywhere in the decision.
 

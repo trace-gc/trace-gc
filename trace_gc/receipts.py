@@ -1,4 +1,4 @@
-# context_gc/receipts.py
+# trace_gc/receipts.py
 """Receipt handling utilities.
 
 Provides functions to collect compaction receipts and retrieve the full original 

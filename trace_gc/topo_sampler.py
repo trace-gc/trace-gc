@@ -1,4 +1,4 @@
-# context_gc/topo_sampler.py
+# trace_gc/topo_sampler.py
 """Topological sampler – collapses strongly connected components (cycles).
 
 Identifies cycles (strongly connected components) via Tarjan's algorithm and 

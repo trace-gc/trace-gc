@@ -1,4 +1,4 @@
-# context_gc/benchmark/test_gemini.py
+# trace_gc/benchmark/test_gemini.py
 """Sanity check script to verify Gemini API connection and token cost estimation."""
 
 from __future__ import annotations

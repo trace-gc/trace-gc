@@ -1,5 +1,5 @@
-# context_gc/retention_policy.py
-"""Retention policy module for Context-GC.
+# trace_gc/retention_policy.py
+"""Retention policy module for TraceGC.
 
 Determines if an event is protected from pruning.
 """

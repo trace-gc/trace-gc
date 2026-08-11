@@ -1,11 +1,11 @@
-# context_gc/benchmark/estimate_cost.py
+# trace_gc/benchmark/estimate_cost.py
 """Calculates the exact token sizes and dollar cost estimate for running the benchmark."""
 
 from __future__ import annotations
 
 import json
 import os
-from context_gc.benchmark.methods import method_full_history
+from trace_gc.benchmark.methods import method_full_history
 
 # Gemini 2.5 Flash Pricing (July 2026)
 FLASH_INPUT_RATE_PER_1M = 0.075

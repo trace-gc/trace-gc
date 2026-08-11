@@ -1,6 +1,6 @@
 import pytest
-from context_gc.graph import StateGraph
-from context_gc.dead_branch_sweeper import sweep_dead_branches
+from trace_gc.graph import StateGraph
+from trace_gc.dead_branch_sweeper import sweep_dead_branches
 
 def test_sweep_dead_branches():
     graph = StateGraph()

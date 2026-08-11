@@ -11,9 +11,9 @@ from __future__ import annotations
 import os
 import json
 import pytest
-from context_gc import ContextGC, compact_events
-from context_gc.events import load_events_from_json
-from context_gc.receipts import get_receipt
+from trace_gc import TraceGC, compact_events
+from trace_gc.events import load_events_from_json
+from trace_gc.receipts import get_receipt
 
 FIXTURE_RESEARCH_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "research_agent_trace.json")
 FIXTURE_SUPPORT_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "support_agent_trace.json")
@@ -66,7 +66,7 @@ def test_support_agent_trace():
     """Verify support_agent_trace.json compaction and semantic probes."""
     assert os.path.exists(FIXTURE_SUPPORT_PATH)
     
-    client = ContextGC()
+    client = TraceGC()
     events = load_events_from_json(FIXTURE_SUPPORT_PATH)
     for ev in events:
         client.add_event(ev)

@@ -1,4 +1,4 @@
-# context_gc/graph.py
+# trace_gc/graph.py
 """StateGraph implementation – nodes, edges, and utility helpers.
 
 The graph stores events as nodes and directed edges with an explicit ``edge_type``.  The

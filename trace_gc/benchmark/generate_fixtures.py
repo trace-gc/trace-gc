@@ -1,4 +1,4 @@
-# context_gc/benchmark/generate_fixtures.py
+# trace_gc/benchmark/generate_fixtures.py
 """Programmatic generator for the 9 benchmark traces.
 
 Produces short, medium, and long traces across three domains:

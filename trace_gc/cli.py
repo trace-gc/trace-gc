@@ -1,5 +1,5 @@
-# context_gc/cli.py
-"""CLI tool for context-gc compaction management."""
+# trace_gc/cli.py
+"""CLI tool for trace-gc compaction management."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ import argparse
 import difflib
 import json
 import sys
-from context_gc.compactor import compact_events, _render_event
-from context_gc.receipts import get_receipt
+from trace_gc.compactor import compact_events, _render_event
+from trace_gc.receipts import get_receipt
 
 
 def load_events(path: str) -> list:
-    from context_gc.events import validate_event
+    from trace_gc.events import validate_event
     events = []
     with open(path, "r", encoding="utf-8") as f:
         try:
@@ -44,7 +44,7 @@ def load_events(path: str) -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Context-GC CLI tool for context compaction management.")
+    parser = argparse.ArgumentParser(description="TraceGC CLI tool for context compaction management.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # compact subcommand

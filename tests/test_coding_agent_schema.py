@@ -1,6 +1,6 @@
 import pytest
-from context_gc.events import validate_event
-from context_gc.compactor import _render_event, compact_events
+from trace_gc.events import validate_event
+from trace_gc.compactor import _render_event, compact_events
 
 def test_file_read_validation():
     # Valid

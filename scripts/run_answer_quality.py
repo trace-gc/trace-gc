@@ -20,8 +20,8 @@ from typing import Dict, List, Any, Optional
 # Adjust path to import local package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from context_gc.events import validate_event
-from context_gc.compactor import compact_events, _render_event
+from trace_gc.events import validate_event
+from trace_gc.compactor import compact_events, _render_event
 
 
 def get_claude_response(api_key: str, system_prompt: str, prompt: str) -> str:

@@ -1,10 +1,10 @@
-# Context-GC Agent Developer Guide
+# TraceGC Agent Developer Guide
 
-This document outlines the developer contracts, build commands, test instructions, and event schema definitions for **Context-GC**.
+This document outlines the developer contracts, build commands, test instructions, and event schema definitions for **TraceGC**.
 
 ## Runtime Dependency Contract
 
-* **Zero Required Runtime Dependencies**: The core Context-GC library (`context_gc/`) is fully self-contained and does not require any external runtime libraries (e.g., no packages like `numpy`, `networkx`, `requests`, or LLM client libraries are needed to run compaction).
+* **Zero Required Runtime Dependencies**: The core TraceGC library (`trace_gc/`) is fully self-contained and does not require any external runtime libraries (e.g., no packages like `numpy`, `networkx`, `requests`, or LLM client libraries are needed to run compaction).
 * **Optional / Test Dependencies**: Testing tools and benchmark runners (such as `pytest`, `hypothesis`, and `google-genai`) are defined under the optional `test` dependency group in `pyproject.toml`.
 
 ---
@@ -34,7 +34,7 @@ pytest
 
 ## Event Schema Contract
 
-Context-GC expects events to follow a strict validation schema defined in [context_gc/events.py](context_gc/events.py). Every event is a dictionary containing the following core fields:
+TraceGC expects events to follow a strict validation schema defined in [trace_gc/events.py](trace_gc/events.py). Every event is a dictionary containing the following core fields:
 * `id` (string, required): A unique identifier for the event.
 * `type` (string, required): One of the five structured types listed below.
 * `timestamp` (integer or float, required): Unix timestamp or sequential counter.

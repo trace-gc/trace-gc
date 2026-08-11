@@ -1,4 +1,4 @@
-# context_gc/dedup_engine.py
+# trace_gc/dedup_engine.py
 """Deduplication engine – prunes duplicate tool calls."""
 
 from __future__ import annotations

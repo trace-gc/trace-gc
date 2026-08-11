@@ -1,7 +1,7 @@
 import os
 import pytest
-from context_gc.events import load_events_from_json
-from context_gc.compactor import compact_events
+from trace_gc.events import load_events_from_json
+from trace_gc.compactor import compact_events
 
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "sample_trace.json")
 

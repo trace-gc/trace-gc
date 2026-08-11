@@ -1,7 +1,7 @@
 # demo.py
-"""Interactive CLI demo for Context-GC.
+"""Interactive CLI demo for TraceGC.
 
-Simulates agent execution traces in real-time, appends events to ContextGC,
+Simulates agent execution traces in real-time, appends events to TraceGC,
 compacts history, and prints a detailed analysis using dynamic graph‑based
 pruned-reason classification.
 """
@@ -11,13 +11,13 @@ from __future__ import annotations
 import os
 import json
 import time
-from context_gc import ContextGC
+from trace_gc import TraceGC
 
 FIXTURE_SUPPORT = os.path.join(os.path.dirname(__file__), "tests", "fixtures", "support_agent_trace.json")
 FIXTURE_RESEARCH = os.path.join(os.path.dirname(__file__), "tests", "fixtures", "research_agent_trace.json")
 
 
-def get_prune_reason(graph: ContextGC, node_id: str) -> str:
+def get_prune_reason(graph: TraceGC, node_id: str) -> str:
     """Classify the reason why a node was pruned based on graph properties."""
     # 1. Identify if it is part of a collapsed cycle
     clustered_nodes = set()
@@ -87,7 +87,7 @@ def run_demo_for(fixture_path: str, title: str):
     else:
         events = data
 
-    client = ContextGC()
+    client = TraceGC()
     
     print("\n--- Simulating Agent Execution (Ingesting Events) ---")
     for idx, ev in enumerate(events):
