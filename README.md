@@ -345,3 +345,26 @@ truly discarded, and every pruned event remains recoverable via
 - **API Compaction Performance**: Incremental compaction is not fully incremental under the hood; it re-runs the full compaction pipeline on each `.compact()` call. For very long traces, this means repeated execution overhead.
 - **Retain Until Expiration**: The `retain_until` event metadata field currently has no dynamic expiration mechanism (e.g. tracking when a task or session actually ends). In Phase 1, it behaves identically to permanent protection.
 - **Deduplication Scope**: Deduplication is intentionally scoped to `tool_call`/`tool_result` pairs only. Repeated `file_read`, `test_run`, `build_run`, or similar coding-agent events are NOT deduplicated, even if identical — re-reading a file or re-running tests after a change represents meaningful re-verification, not redundancy, and collapsing them would remove genuine reasoning-trace context.
+
+---
+
+## Development Setup
+
+For local development across the package monorepo, you must install the packages in editable mode to allow correct module resolution (e.g. without manually managing `PYTHONPATH`).
+
+1. Install the core `context-gc` package:
+   ```bash
+   pip install -e .
+   ```
+2. Install the `context-gc-storage` package:
+   ```bash
+   pip install -e ./context-gc-storage
+   ```
+3. Once functional implementations are added for `context-gc-mcp` and `context-gc-langgraph`, install them similarly:
+   ```bash
+   pip install -e ./context-gc-mcp
+   ```
+   ```bash
+   pip install -e ./context-gc-langgraph
+   ```
+
