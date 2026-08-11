@@ -1,8 +1,8 @@
 import pytest
 import time
-from context_gc_storage.memory_store import MemoryStore
-from context_gc_storage.sqlite_store import SQLiteStore
-from context_gc_storage.errors import (
+from trace_gc_storage.memory_store import MemoryStore
+from trace_gc_storage.sqlite_store import SQLiteStore
+from trace_gc_storage.errors import (
     UnknownContextError,
     ExpiredContextError,
     ContextPurgedError,

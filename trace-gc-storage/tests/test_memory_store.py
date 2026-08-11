@@ -1,8 +1,8 @@
 import pytest
 import threading
 import time
-from context_gc_storage.memory_store import MemoryStore
-from context_gc_storage.errors import ContextPurgedError
+from trace_gc_storage.memory_store import MemoryStore
+from trace_gc_storage.errors import ContextPurgedError
 
 def test_concurrency():
     store = MemoryStore()

@@ -3,11 +3,11 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "context-gc-langgraph"
+name = "trace-gc-langgraph"
 version = "0.1.0"
-description = "LangGraph adapters for context-gc"
+description = "LangGraph adapters for trace-gc"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "context-gc"
+    "trace-gc"
 ]

@@ -3,11 +3,11 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "context-gc-mcp"
+name = "trace-gc-storage"
 version = "0.1.0"
-description = "MCP protocol adapters for context-gc"
+description = "Storage adapters for trace-gc"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "context-gc"
+    "trace-gc"
 ]

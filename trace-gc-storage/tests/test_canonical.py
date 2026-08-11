@@ -1,5 +1,5 @@
 import pytest
-from context_gc_storage.canonical import canonical_payload, payload_hash
+from trace_gc_storage.canonical import canonical_payload, payload_hash
 
 def test_key_ordering_invariance():
     event_a = [{"id": "e1", "type": "decision", "timestamp": 100, "content": "hello"}]

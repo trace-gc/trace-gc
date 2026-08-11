@@ -4,16 +4,16 @@ import json
 import uuid
 import copy
 import threading
-from context_gc_storage.protocol import AppendResult, CompactionRecord
-from context_gc_storage.errors import (
+from trace_gc_storage.protocol import AppendResult, CompactionRecord
+from trace_gc_storage.errors import (
     UnknownContextError,
     ExpiredContextError,
     ContextPurgedError,
     ReceiptNotFoundError,
     IdempotencyConflictError
 )
-from context_gc_storage.canonical import payload_hash
-from context_gc.events import validate_event
+from trace_gc_storage.canonical import payload_hash
+from trace_gc.events import validate_event
 
 class SQLiteStore:
     def __init__(self, db_path: str = ":memory:"):

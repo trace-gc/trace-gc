@@ -2,8 +2,8 @@ import pytest
 import threading
 import time
 import os
-from context_gc_storage.sqlite_store import SQLiteStore
-from context_gc_storage.errors import ContextPurgedError, ExpiredContextError
+from trace_gc_storage.sqlite_store import SQLiteStore
+from trace_gc_storage.errors import ContextPurgedError, ExpiredContextError
 
 def test_sqlite_concurrency(tmp_path):
     db_file = str(tmp_path / "concurrency.db")
