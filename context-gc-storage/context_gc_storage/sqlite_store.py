@@ -266,7 +266,7 @@ class SQLiteStore:
 
     def load_events(self, context_id: str) -> list[dict]:
         conn = self.conn
-        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("BEGIN")
         try:
             self._get_context(conn, context_id)
             cursor = conn.execute(
@@ -308,7 +308,7 @@ class SQLiteStore:
 
     def get_latest_compaction(self, context_id: str) -> CompactionRecord | None:
         conn = self.conn
-        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("BEGIN")
         try:
             self._get_context(conn, context_id)
             seq_row = conn.execute(
@@ -350,7 +350,7 @@ class SQLiteStore:
 
     def get_receipt(self, context_id: str, node_id: str) -> dict:
         conn = self.conn
-        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("BEGIN")
         try:
             self._get_context(conn, context_id)
             row = conn.execute(
@@ -405,7 +405,7 @@ class SQLiteStore:
 
     def get_metadata(self, context_id: str) -> dict:
         conn = self.conn
-        conn.execute("BEGIN IMMEDIATE")
+        conn.execute("BEGIN")
         try:
             ctx_data = self._get_context(conn, context_id)
             seq_row = conn.execute(

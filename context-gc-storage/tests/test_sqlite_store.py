@@ -174,3 +174,67 @@ def test_sqlite_status_check_race(tmp_path):
         store.load_events(cid)
         
     store.close()
+
+def test_sqlite_wal_read_concurrency(tmp_path):
+    db_file = str(tmp_path / "wal_concurrency.db")
+    store = SQLiteStore(db_file)
+    cid_read = store.create()
+    cid_write = store.create()
+    
+    # Write one event to cid_read so there is something to select
+    store.append(cid_read, [{"id": "e1", "type": "decision", "timestamp": 100, "content": "read value"}])
+    
+    read_started = threading.Event()
+    write_finished = threading.Event()
+    read_finished = threading.Event()
+    errors = []
+
+    def reader_thread():
+        thread_store = SQLiteStore(db_file)
+        try:
+            conn = thread_store.conn
+            conn.execute("BEGIN")
+            rows = conn.execute("SELECT payload_json FROM events WHERE context_id = ?", (cid_read,)).fetchall()
+            assert len(rows) == 1
+            
+            read_started.set()
+            time.sleep(0.5)
+            
+            conn.execute("COMMIT")
+            read_finished.set()
+        except Exception as e:
+            errors.append(e)
+        finally:
+            thread_store.close()
+
+    def writer_thread():
+        read_started.wait()
+        thread_store = SQLiteStore(db_file)
+        try:
+            t0 = time.time()
+            thread_store.append(cid_write, [{"id": "e2", "type": "decision", "timestamp": 200, "content": "write value"}])
+            write_time = time.time() - t0
+            
+            assert write_time < 0.2
+            assert not read_finished.is_set()
+            write_finished.set()
+        except Exception as e:
+            errors.append(e)
+        finally:
+            thread_store.close()
+
+    t_read = threading.Thread(target=reader_thread)
+    t_write = threading.Thread(target=writer_thread)
+
+    t_read.start()
+    t_write.start()
+
+    t_read.join()
+    t_write.join()
+
+    assert not errors
+    assert write_finished.is_set()
+    assert read_finished.is_set()
+    
+    store.close()
+
