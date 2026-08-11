@@ -2,7 +2,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/athishio/context-gc/blob/main/demo/colab_demo.ipynb) [![Live Web App](https://img.shields.io/badge/Live-Web%20App-blueviolet)](https://context-gc-web.vercel.app)
 
-Deterministic, receipt-preserving context compaction middleware for AI agents with no extra LLM calls.
+Deterministic, receipt-preserving context compaction library for AI agents with no extra LLM calls.
 
 * **Reduces token cost** by pruning obsolete event paths and redundant actions.
 * **Avoids stale-context confusion** by removing overridden variables and dead-end attempts.

@@ -1,5 +1,5 @@
 # context_gc/__init__.py
-"""Top level package for the deterministic context compaction middleware.
+"""Top level package for the deterministic context compaction library.
 
 Exports the public API so users can simply do::
 

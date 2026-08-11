@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - Unreleased
+
+### Changed
+- **License**: License changed from MIT to Apache 2.0, effective this version onward. All prior published versions (0.1.0 through 0.3.0) remain licensed under MIT; those terms do not change retroactively.
+
 ## [0.3.0] - 2026-08-08
 
 ### Added

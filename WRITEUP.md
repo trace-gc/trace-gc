@@ -1,4 +1,4 @@
-# Technical Writeup: Context-GC Compaction Middleware
+# Technical Writeup: Context-GC Compaction Library
 
 This document provides a comprehensive technical overview of Context-GC, a framework-agnostic, zero-dependency Python library designed for deterministic, receipt-preserving context compaction in stateful AI agent workflows.
 
