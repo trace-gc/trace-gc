@@ -50,3 +50,49 @@ def test_collapse_cycles():
     assert (expected_cid, "A") in sequence_edges
     # Edges to outside should remain
     assert ("C", "D") in sequence_edges
+
+
+def test_iterative_tarjan_10k_cycle():
+    """BUG-2 regression: a 10K-node cycle must not stack-overflow with the iterative Tarjan implementation."""
+    import time
+    graph = StateGraph()
+    n = 10_000
+    for i in range(n):
+        graph.add_node({"id": f"c{i}", "type": "decision", "timestamp": i})
+    # Create a single large cycle: c0->c1->...->c(n-1)->c0
+    for i in range(n - 1):
+        graph.add_edge(f"c{i}", f"c{i+1}", "sequence")
+    graph.add_edge(f"c{n-1}", "c0", "sequence")
+
+    t0 = time.perf_counter()
+    receipt_ids = collapse_cycles(graph)
+    dt = time.perf_counter() - t0
+
+    # All n members must be pruned and collapsed into one cluster
+    assert len(receipt_ids) == 1
+    cluster_id = receipt_ids[0]
+    assert cluster_id in graph.nodes
+    assert len(graph.pruned) == n
+    print(f"10K cycle collapsed in {dt:.3f}s")
+
+
+def test_iterative_tarjan_100k_linear_chain():
+    """BUG-2 regression: a 100K linear chain (no cycles) must complete without stack overflow."""
+    import time
+    from trace_gc.compactor import compact_events
+    n = 100_000
+    events = [{"id": "e0", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Root"}]
+    for i in range(1, n):
+        events.append({
+            "id": f"e{i}",
+            "type": "decision",
+            "timestamp": 1000 + i,
+            "parent_id": f"e{i-1}",
+            "content": f"Step {i}",
+        })
+    t0 = time.perf_counter()
+    result = compact_events(events)
+    dt = time.perf_counter() - t0
+    assert len(result["compact_events"]) == n, "All events must survive (no cycles, no abandons)"
+    assert len(result["pruned_ids"]) == 0
+    print(f"100K linear chain completed in {dt:.3f}s")

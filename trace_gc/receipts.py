@@ -1,7 +1,7 @@
 # trace_gc/receipts.py
 """Receipt handling utilities.
 
-Provides functions to collect compaction receipts and retrieve the full original 
+Provides functions to collect compaction receipts and retrieve the full original
 event payloads for pruned nodes.
 """
 
@@ -13,14 +13,24 @@ from .graph import StateGraph
 
 
 def collect_receipts(graph: StateGraph) -> List[Dict]:
-    """Return a list of all pruned receipts from the graph, sorted by timestamp."""
+    """Return a list of all pruned receipt stubs from the graph, sorted by event timestamp."""
     receipts = list(graph.receipts.values())
     receipts.sort(key=lambda r: r.get("timestamp", 0))
     return receipts
 
 
 def get_receipt(graph: StateGraph, node_id: str) -> dict:
-    """Return the original event dictionary for a pruned node ID. Raises KeyError if node_id is not in graph.nodes."""
+    """Return the original event dictionary for a pruned node, with ``pruned=True`` added.
+
+    Returns a *copy* of the original event dict — the copy has ``pruned=True``
+    appended.  The original dict in ``graph.nodes`` is never mutated.
+
+    Raises ``KeyError`` if *node_id* is not in ``graph.nodes``.
+    """
     if node_id not in graph.nodes:
         raise KeyError(f"Unknown node id: {node_id}")
-    return graph.nodes[node_id]
+    original = graph.nodes[node_id]
+    result = dict(original)
+    if node_id in graph.pruned:
+        result["pruned"] = True
+    return result

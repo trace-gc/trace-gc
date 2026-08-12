@@ -1,8 +1,9 @@
 # trace_gc/topo_sampler.py
 """Topological sampler – collapses strongly connected components (cycles).
 
-Identifies cycles (strongly connected components) via Tarjan's algorithm and 
-collapses them into a single deterministic cluster receipt node.
+Identifies cycles (strongly connected components) via an iterative Tarjan's algorithm and
+collects them into a single deterministic cluster receipt node. The iterative implementation
+avoids Python recursion limits on large graphs.
 """
 
 from __future__ import annotations
@@ -22,48 +23,72 @@ def _deterministic_cluster_id(member_ids: List[str]) -> str:
 
 
 def collapse_cycles(graph: StateGraph) -> List[str]:
-    """Detect cycles, collapse each component into a cluster receipt, and mark members as pruned."""
-    import sys
-    old_limit = sys.getrecursionlimit()
-    sys.setrecursionlimit(max(old_limit, len(graph.nodes) + 100))
-    try:
-        index = 0
-        indices: Dict[str, int] = {}
-        lowlink: Dict[str, int] = {}
-        stack: List[str] = []
-        on_stack: Set[str] = set()
-        sccs: List[Set[str]] = []
+    """Detect cycles via iterative Tarjan's SCC, collapse each into a cluster receipt, and mark members pruned.
 
-        def strongconnect(v: str) -> None:
-            nonlocal index
-            indices[v] = index
-            lowlink[v] = index
-            index += 1
-            stack.append(v)
-            on_stack.add(v)
-            for w in graph.get_children(v, edge_types=["sequence"]):
+    Uses an explicit DFS stack instead of Python recursion so arbitrarily large graphs
+    (including linear chains of 100K+ nodes) are handled without stack overflow.
+    Output is identical to the former recursive implementation: same SCC groupings,
+    same cluster ID derivation via SHA-256 of sorted member IDs.
+    """
+    idx: int = 0
+    indices: Dict[str, int] = {}
+    lowlink: Dict[str, int] = {}
+    tarjan_stack: List[str] = []   # Tarjan's path stack
+    on_stack: Set[str] = set()
+    sccs: List[Set[str]] = []
+
+    for start in list(graph.nodes):
+        if start in indices:
+            continue
+
+        # Initialise the start node before entering the DFS loop
+        indices[start] = idx
+        lowlink[start] = idx
+        idx += 1
+        tarjan_stack.append(start)
+        on_stack.add(start)
+
+        # Each DFS frame: (node_id, children_iterator)
+        # Using iter() + next() preserves iterator state across loop iterations.
+        dfs_stack: List[tuple] = [
+            (start, iter(graph.get_children(start, edge_types=["sequence"])))
+        ]
+
+        while dfs_stack:
+            v, children = dfs_stack[-1]
+            try:
+                w = next(children)
                 if w not in indices:
-                    strongconnect(w)
-                    lowlink[v] = min(lowlink[v], lowlink[w])
+                    # Tree edge — initialise w and push a new frame
+                    indices[w] = idx
+                    lowlink[w] = idx
+                    idx += 1
+                    tarjan_stack.append(w)
+                    on_stack.add(w)
+                    dfs_stack.append(
+                        (w, iter(graph.get_children(w, edge_types=["sequence"])))
+                    )
                 elif w in on_stack:
+                    # Back edge — update lowlink of current node
                     lowlink[v] = min(lowlink[v], indices[w])
-            # If v is a root node, pop the stack and generate an SCC
-            if lowlink[v] == indices[v]:
-                component: Set[str] = set()
-                while True:
-                    w = stack.pop()
-                    on_stack.remove(w)
-                    component.add(w)
-                    if w == v:
-                        break
-                if len(component) > 1:
-                    sccs.append(component)
-
-        for node_id in list(graph.nodes):
-            if node_id not in indices:
-                strongconnect(node_id)
-    finally:
-        sys.setrecursionlimit(old_limit)
+            except StopIteration:
+                # All neighbours of v processed — pop this frame
+                dfs_stack.pop()
+                # Propagate lowlink to the parent frame
+                if dfs_stack:
+                    parent = dfs_stack[-1][0]
+                    lowlink[parent] = min(lowlink[parent], lowlink[v])
+                # Check whether v is the root of a completed SCC
+                if lowlink[v] == indices[v]:
+                    component: Set[str] = set()
+                    while True:
+                        w = tarjan_stack.pop()
+                        on_stack.remove(w)
+                        component.add(w)
+                        if w == v:
+                            break
+                    if len(component) > 1:
+                        sccs.append(component)
 
     receipt_ids: List[str] = []
     for component in sccs:

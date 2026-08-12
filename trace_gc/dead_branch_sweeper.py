@@ -40,6 +40,27 @@ def sweep_dead_branches(graph: StateGraph) -> List[str]:
         if tgt in graph.nodes:
             dfs(tgt, trigger_id)
 
+    # --- Branch-rejoining fix ---
+    # Remove any non-directly-abandoned node from to_prune if it has at
+    # least one sequence parent that is NOT in to_prune. Such nodes are
+    # reachable from an active (non-abandoned) root and must not be swept.
+    directly_abandoned: set[str] = set(abandon_reasons.keys())
+    changed = True
+    while changed:
+        changed = False
+        for node_id in list(to_prune):
+            if node_id in directly_abandoned:
+                continue  # directly targeted nodes are always pruned
+            parents = [
+                src for src, typ in graph._rev.get(node_id, [])
+                if typ == "sequence"
+            ]
+            if parents and any(p not in to_prune for p in parents):
+                to_prune.discard(node_id)
+                if node_id in descendant_reasons:
+                    del descendant_reasons[node_id]
+                changed = True
+
     pruned_ids: List[str] = []
     for node_id in to_prune:
         trigger_id = descendant_reasons[node_id]

@@ -59,3 +59,58 @@ This document outlines the strict design contracts and invariants that govern **
         (mixed matched/unmatched block) and confirmed by the reproducibility and disabled-fallback tests
         added in the same commit.
 
+## Entry 23 — Event ID Uniqueness Invariant (BUG-1 Fix, Phase 1 Hardening)
+
+**Decision**: `StateGraph.add_node()` now raises `ValueError("Duplicate event id: {id}")` when the same ID is submitted twice, rather than silently overwriting the earlier node.
+
+**Rationale**: Silent overwrite creates undefined pruning behavior — existing edges still reference the original node's position, but the node payload is replaced. An infrastructure-grade library must reject malformed input predictably. All callers generating event IDs are responsible for uniqueness; the graph enforces the invariant at insertion time.
+
+**Breaking change**: No — valid traces have unique IDs. Any trace that previously relied on silent overwrite was already producing corrupt compaction output.
+
+---
+
+## Entry 24 — Iterative Tarjan's SCC (BUG-2 Fix, Phase 1 Hardening)
+
+**Decision**: `collapse_cycles()` in `topo_sampler.py` was rewritten from recursive to iterative Tarjan's SCC using an explicit DFS stack. The `sys.setrecursionlimit` workaround was removed.
+
+**Rationale**: The recursive implementation stack-overflowed on traces with linear chains deeper than Python's C-stack limit (roughly 2K–10K frames depending on platform). At 100K events — a realistic production scale — the crash was confirmed. The iterative implementation is O(N+E) and handles arbitrarily large graphs. Output is identical: same SCC groupings, same cluster ID derivation via SHA-256 of sorted member IDs.
+
+**Breaking change**: None — pure implementation change, identical behavior.
+
+---
+
+## Entry 25 — Receipt Timestamp and Mutation Isolation (GAP-4/GAP-5 Fix, Phase 1 Hardening)
+
+**Decision**: 
+1. `mark_pruned()` now copies the original event's `timestamp` into the receipt stub so `collect_receipts()` sorts by actual event time rather than treating all stubs as `timestamp=0`.
+2. `mark_pruned()` no longer mutates `event["pruned"] = True` on the original dict in `graph.nodes`. The `pruned=True` flag now appears only on copies returned by `get_receipt()`.
+3. `get_receipt()` returns a `dict(original)` shallow copy with `pruned=True` added — not a reference to the graph's internal dict.
+
+**Rationale**: Mutation of caller-held event dicts is an invisible side-effect that violates caller expectations. Receipt ordering by missing timestamp was silently wrong. Both are now fixed without API breakage.
+
+**Breaking change**: Code that previously relied on `graph.nodes[node_id]["pruned"] is True` will no longer see `pruned=True` on the bare node. Use `get_receipt()` instead, which always returns a copy with `pruned=True`.
+
+---
+
+## Entry 26 — prune_referenced_values Override Engine Flag (BUG-3 Design Decision, Phase 1 Hardening)
+
+**Decision**: `apply_overrides()` and `compact_events()` now accept a `prune_referenced_values: bool = True` parameter.
+
+- **`True` (default, context-only mode)**: An older `set_var` value is pruned regardless of whether an active `tool_call`'s arguments still reference it. This was the previous behavior and remains the default because it produces maximum compaction and the LLM can re-derive values from surviving `tool_call` events.
+- **`False` (replay-safe mode)**: An older `set_var` value is retained if any surviving `tool_call` event's `arguments` dict contains the same key with the same value. Use this when the compacted trace must be replayable without recomputing variable values from tool history.
+
+**Rationale**: The override engine's previous behavior (prune all older values unconditionally) was correct for context-window compaction but unsafe for replay. Making the behavior explicit and opt-out-able via a documented flag is better than a silent "TODO".
+
+**Breaking change**: None — default preserves current behavior.
+
+---
+
+## Entry 27 — Branch Rejoining Fix (GAP-3, Phase 1 Hardening)
+
+**Decision**: `sweep_dead_branches()` now performs a fixpoint pass after its initial DFS to remove from the prune set any node that has at least one sequence parent NOT in the prune set.
+
+**Rationale**: Before this fix, a node reachable from both an abandoned branch and an active branch would be incorrectly pruned. The DFS from abandoned targets would add it to `to_prune` without checking whether an active path also reaches it. The fixpoint correctly implements the invariant: a node is swept only if ALL of its sequence parents are also swept (or it is a direct `ref_to` target of an abandon event).
+
+**Scope**: This scenario (a node with two parents, one abandoned and one active) is rare in practice because the standard event model gives each node at most one `parent_id`. It can occur when `add_edge()` is called directly or when a graph is constructed programmatically.
+
+**Breaking change**: None for standard usage. Traces where a node was previously (incorrectly) pruned due to rejoining will now correctly retain it.

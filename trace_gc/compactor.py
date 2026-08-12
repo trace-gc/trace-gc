@@ -108,7 +108,7 @@ def _build_state_graph(events: List[Dict[str, Any]]) -> StateGraph:
 # ---------------------------------------------------------------------------
 # Main entry point – run pipeline, render, and compute token metrics
 # ---------------------------------------------------------------------------
-def compact_events(events: List[Dict[str, Any]]) -> Dict[str, Any]:
+def compact_events(events: List[Dict[str, Any]], prune_referenced_values: bool = True) -> Dict[str, Any]:
     """Run the full deterministic compaction pipeline and produce a prompt.
 
     Returns a mapping with the following keys:
@@ -127,7 +127,7 @@ def compact_events(events: List[Dict[str, Any]]) -> Dict[str, Any]:
     # -------------------------------------------------------------------
     graph = _build_state_graph(events)
     sweep_dead_branches(graph)      # stage 1
-    apply_overrides(graph)          # stage 2
+    apply_overrides(graph, prune_referenced_values=prune_referenced_values)   # stage 2
     deduplicate_tool_calls(graph)   # stage 3
     collapse_cycles(graph)          # stage 4
 

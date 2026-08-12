@@ -90,3 +90,65 @@ def test_huge_trace_performance_and_linearity():
     if dt_small > 0.001:  # Avoid division by very small numbers
         ratio = dt_large / dt_small
         assert ratio < 20.0, f"Performance scaling is worse than O(N log N), ratio: {ratio:.1f}"
+
+
+def test_duplicate_event_id_raises():
+    """BUG-1 regression: duplicate event IDs must raise ValueError, not silently overwrite."""
+    from trace_gc.graph import StateGraph
+    graph = StateGraph()
+    graph.add_node({"id": "e1", "type": "decision", "timestamp": 100, "content": "first"})
+    with pytest.raises(ValueError, match="Duplicate event id"):
+        graph.add_node({"id": "e1", "type": "decision", "timestamp": 200, "content": "second"})
+
+
+def test_compact_events_duplicate_id_raises():
+    """BUG-1 regression: compact_events() must raise on duplicate IDs (not produce corrupt output)."""
+    events = [
+        {"id": "e1", "type": "decision", "timestamp": 100, "parent_id": None, "content": "first"},
+        {"id": "e1", "type": "decision", "timestamp": 200, "parent_id": None, "content": "second"},
+    ]
+    with pytest.raises(ValueError, match="Duplicate event id"):
+        compact_events(events)
+
+
+def test_100k_events_stress_test():
+    """WS6: 100K-event linear chain must complete without crash and within memory bounds.
+    
+    Measures wall-clock time and peak memory. Asserts:
+    - No stack overflow (BUG-2 regression)
+    - All 100K events survive (no pruning in a clean chain)
+    - Completes in < 60s wall-clock (generous bound, not an optimization target)
+    - Peak memory < 2GB (generous sanity guard)
+    """
+    import time
+    import tracemalloc
+
+    n = 100_000
+    events = [{"id": "e0", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Root"}]
+    for i in range(1, n):
+        events.append({
+            "id": f"e{i}",
+            "type": "decision",
+            "timestamp": 1000 + i,
+            "parent_id": f"e{i-1}",
+            "content": f"Step {i}",
+        })
+
+    tracemalloc.start()
+    t0 = time.perf_counter()
+    result = compact_events(events)
+    dt = time.perf_counter() - t0
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    retained = len(result["compact_events"])
+    pruned = len(result["pruned_ids"])
+    receipts = len(result["receipts"])
+    peak_mb = peak / (1024 * 1024)
+
+    print(f"\n100K stress: {dt:.2f}s  peak={peak_mb:.1f}MB  retained={retained}  pruned={pruned}  receipts={receipts}")
+
+    assert retained == n, f"Expected {n} retained events, got {retained}"
+    assert pruned == 0, f"Expected 0 pruned events, got {pruned}"
+    assert dt < 60.0, f"100K events took too long: {dt:.2f}s"
+    assert peak_mb < 2048.0, f"Peak memory exceeded 2GB: {peak_mb:.1f}MB"

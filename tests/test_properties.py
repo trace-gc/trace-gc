@@ -1,6 +1,6 @@
 import pytest
 import json
-from hypothesis import given, strategies as st
+from hypothesis import given, strategies as st, settings
 from trace_gc.graph import StateGraph
 from trace_gc.compactor import compact_events, _render_event
 from trace_gc.receipts import get_receipt
@@ -120,3 +120,57 @@ def test_compact_events_invariants(events):
     for src, dst, typ in graph.edges:
         if typ == "sequence" and src in id_to_pos and dst in id_to_pos:
             assert id_to_pos[src] < id_to_pos[dst], f"Sequence dependency violation: {src} must precede {dst}"
+
+
+@given(event_trace_strategy())
+@settings(max_examples=50)
+def test_unrelated_active_branch_never_pruned(events):
+    """Property: events on an active (non-abandoned) branch are never in graph.pruned.
+    
+    Builds a minimal active branch (two decision events with no abandonment)
+    and appends it to the generated trace. Verifies that none of the active-branch
+    events appear in the pruned set after compaction.
+    """
+    from trace_gc.compactor import compact_events
+    # Append a guaranteed-active branch of 2 events
+    max_ts = max((e["timestamp"] for e in events), default=0)
+    active_events = [
+        {"id": "_active_root", "type": "decision", "timestamp": max_ts + 1000,
+         "parent_id": None, "content": "active root"},
+        {"id": "_active_child", "type": "decision", "timestamp": max_ts + 1001,
+         "parent_id": "_active_root", "content": "active child"},
+    ]
+    combined = events + active_events
+    result = compact_events(combined)
+    graph = result["graph"]
+    # The active branch events must not be pruned
+    assert "_active_root" not in graph.pruned, "Active root was incorrectly pruned"
+    assert "_active_child" not in graph.pruned, "Active child was incorrectly pruned"
+
+
+@given(
+    st.lists(
+        st.fixed_dictionaries({
+            "id": st.text(min_size=1, max_size=10, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))),
+            "type": st.just("decision"),
+            "timestamp": st.integers(min_value=0, max_value=10000),
+            "parent_id": st.none(),
+            "content": st.text(min_size=1, max_size=20),
+        }),
+        min_size=2,
+        max_size=5,
+    )
+)
+def test_invalid_trace_duplicate_id_raises_value_error(raw_events):
+    """Property: a trace with duplicate event IDs raises ValueError specifically.
+    
+    Confirms that the pipeline fails predictably (ValueError) rather than
+    producing corrupt output or raising an unrelated exception type.
+    """
+    from trace_gc.compactor import compact_events
+    # Force a duplicate by copying the first event
+    dup_event = dict(raw_events[0])
+    dup_event["timestamp"] = raw_events[0]["timestamp"] + 1  # different data, same ID
+    events_with_dup = [raw_events[0], dup_event]  # two events with the same ID
+    with pytest.raises(ValueError, match="Duplicate event id"):
+        compact_events(events_with_dup)

@@ -44,6 +44,8 @@ class StateGraph:
     # ---------------------------------------------------------------------
     def add_node(self, event: dict) -> None:
         node_id = event["id"]
+        if node_id in self.nodes:
+            raise ValueError(f"Duplicate event id: {node_id!r}")
         self.nodes[node_id] = event
 
     def add_edge(self, src: str, dst: str, edge_type: str) -> None:
@@ -109,17 +111,25 @@ class StateGraph:
     # Pruning helper – creates a receipt stub and marks the node as pruned.
     # ---------------------------------------------------------------------
     def mark_pruned(self, node_id: str) -> None:
-        """Mark *node_id* as pruned and generate a minimal receipt stub.
+        """Mark *node_id* as pruned and generate a receipt stub.
 
-        The receipt stub is stored in ``self.receipts`` for later consumption by the
-        ``receipts`` module.
+        The receipt stub is stored in ``self.receipts`` for consumption by the
+        ``receipts`` module.  The original event dict in ``self.nodes`` is NOT
+        mutated — callers that hold a reference to the original dict will see no
+        change.  The ``pruned: True`` flag appears only on copies returned by
+        ``get_receipt()``.
         """
         self.pruned.add(node_id)
         event = self.nodes.get(node_id)
-        if event is not None:
-            event["pruned"] = True
-        # Create deterministic receipt stub with explicit id field.
-        receipt = {"id": node_id, "type": "receipt", "target_id": node_id, "status": "pruned"}
+        # Copy timestamp from original event so collect_receipts() sorts correctly.
+        ts = event.get("timestamp", 0) if event is not None else 0
+        receipt = {
+            "id": node_id,
+            "type": "receipt",
+            "target_id": node_id,
+            "status": "pruned",
+            "timestamp": ts,
+        }
         self.receipts[node_id] = receipt
 
     def __repr__(self) -> str:

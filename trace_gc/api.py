@@ -38,10 +38,18 @@ class CompactionResult:
     _semantic_extraction: bool
 
     def get_receipt(self, node_id: str) -> dict:
-        """Recover the original normalized event/message for a pruned node."""
+        """Recover the original normalized event/message for a pruned node.
+        
+        Returns a copy of the original event dict with ``pruned=True`` added.
+        The original dict is never modified.
+        """
         if node_id not in self._graph.nodes:
             raise KeyError(f"Unknown node id: {node_id}")
-        return self._graph.nodes[node_id]
+        original = self._graph.nodes[node_id]
+        result = dict(original)
+        if node_id in self._graph.pruned:
+            result["pruned"] = True
+        return result
 
     def recover_all(self) -> list[Any]:
         """Recover all original normalized inputs in trace order."""
@@ -669,18 +677,21 @@ def reconstruct_output(
     return reconstructed
 
 
-def compact(messages: Any, semantic_extraction: bool = True) -> CompactionResult:
+def compact(messages: Any, semantic_extraction: bool = True, prune_referenced_values: bool = True) -> CompactionResult:
     """Run the deterministic compaction pipeline on a universal input messages list."""
     events, orig_inputs, orig_types = normalize_input(messages, semantic_extraction=semantic_extraction)
 
-    result = compact_events(events)
+    result = compact_events(events, prune_referenced_values=prune_referenced_values)
     graph = result["graph"]
     pruned_ids = set(result["pruned_ids"])
 
     receipts: list[Receipt] = []
     for pid in result["pruned_ids"]:
         reason = graph.prune_reasons.get(pid, "pruned")
-        receipts.append(Receipt(node_id=pid, reason=reason, event=graph.nodes[pid]))
+        original = graph.nodes[pid]
+        ev_copy = dict(original)
+        ev_copy["pruned"] = True
+        receipts.append(Receipt(node_id=pid, reason=reason, event=ev_copy))
 
     compacted_messages = reconstruct_output(events, pruned_ids, orig_inputs, orig_types)
 
