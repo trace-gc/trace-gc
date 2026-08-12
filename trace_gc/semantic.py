@@ -201,17 +201,26 @@ def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[
     # Parse segments
     for seg_text, rule, match in segments:
         if rule is not None and match is not None:
+            # Block-level rule: attempt extraction; fall back to text_chunk on failure
+            # so no content is silently dropped (Phase 3 no-silent-loss invariant).
             try:
                 payload = rule["extract_fn"](match, seg_text)
                 payload["source_text"] = seg_text.strip()
                 extracted_events.append(payload)
             except Exception:
-                pass
+                # Extraction failed — preserve text verbatim as a neutral event.
+                if seg_text.strip():
+                    extracted_events.append({
+                        "type": "text_chunk",
+                        "content": seg_text.strip(),
+                        "source_text": seg_text.strip(),
+                    })
         else:
-            # Parse line by line
+            # Unstructured segment: parse line-by-line.
             lines = seg_text.splitlines()
             for line in lines:
                 if not line.strip():
+                    # Blank lines carry no content — skip without emitting an event.
                     continue
                 matched = False
                 for r in line_rules:
@@ -224,7 +233,18 @@ def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[
                             matched = True
                             break
                         except Exception:
+                            # Rule matched but extraction raised — treat as no-match
+                            # so the fallback below runs.
                             pass
+                if not matched:
+                    # No rule matched (or all extract_fns failed) — preserve the
+                    # line verbatim as a neutral text_chunk.  This is the
+                    # "fail-closed" path that prevents silent data loss.
+                    extracted_events.append({
+                        "type": "text_chunk",
+                        "content": line.strip(),
+                        "source_text": line.strip(),
+                    })
 
     # Chain events with sequence parent_id
     final_events = []

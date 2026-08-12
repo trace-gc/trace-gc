@@ -46,3 +46,16 @@ This document outlines the strict design contracts and invariants that govern **
     *   *Verification*: Verified by retention policy logic test assertions in `tests/test_retention_policy.py`.
 21. **MCP protocol metadata and TraceGC result_schema_version are independent versioning layers.**
     *   *Verification*: Documented and verified in architectural and threat model documents.
+22. **Semantic extraction must never silently drop content (no-silent-loss invariant).**
+    *   *Background*: A Phase 3 audit of `trace_gc/semantic.py` found that `extract_semantic_events()` was
+        silently discarding lines that matched no Tier 2 rule and segments whose `extract_fn` raised an
+        exception. Both paths produced no event and consumed the input text, causing invisible data loss.
+    *   *Fix (2026-08-12)*: Both the block-level exception handler and the per-line no-match branch now
+        emit a neutral `text_chunk` event carrying `source_text` and `content` equal to the original
+        line/segment text verbatim. Blank lines are still skipped (they carry no meaningful content).
+        This "fail-closed" contract means any content that enters `extract_semantic_events()` must
+        appear in the returned event list — either as a structured event or as a `text_chunk` fallback.
+    *   *Verification*: Tested by `tests/test_semantic_extraction.py::test_no_silent_loss_on_unmatched_content`
+        (mixed matched/unmatched block) and confirmed by the reproducibility and disabled-fallback tests
+        added in the same commit.
+
