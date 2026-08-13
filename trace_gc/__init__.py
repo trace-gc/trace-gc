@@ -15,3 +15,4 @@ from .middleware import (
 )
 from .api import TraceGC, compact, CompactionResult, Receipt
 from .semantic import extract_semantic_events
+from .analysis import analyze_retained_events

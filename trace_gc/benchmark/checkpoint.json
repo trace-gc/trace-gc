@@ -7,13 +7,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 107,
-      "latency": 2.580000727903098e-05,
+      "latency": 4.75000124424696e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
-        "continuation": true,
-        "decision": true
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -24,13 +24,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 93,
-      "latency": 2.95999925583601e-05,
+      "latency": 5.8299978263676167e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
-        "continuation": true,
-        "decision": true
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -41,13 +41,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 107,
-      "latency": 6.570000550709665e-05,
+      "latency": 0.00012620002962648869,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
-        "continuation": true,
-        "decision": true
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -58,14 +58,116 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 68,
-      "latency": 0.002680700010387227,
+      "latency": 0.003231300041079521,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
-        "decision": true,
+        "decision": false,
         "cycle_collapse": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_a",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 68,
+      "latency": 0.000521700014360249,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 57,
+      "latency": 0.0009864000603556633,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 57,
+      "latency": 0.000687599997036159,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 57,
+      "latency": 0.0006461000302806497,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 57,
+      "latency": 0.0007169999880716205,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_short.json",
+      "length": "short",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 57,
+      "latency": 0.0012316000647842884,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
       },
       "determinism": "yes"
     },
@@ -76,13 +178,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 324,
-      "latency": 3.4199998481199145e-05,
+      "latency": 0.0001148999435827136,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -93,7 +195,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 99,
-      "latency": 3.5599994589574635e-05,
+      "latency": 4.9699912779033184e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -110,7 +212,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 217,
-      "latency": 0.00011229999654460698,
+      "latency": 0.00015029998030513525,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -121,19 +223,139 @@
       "determinism": "n/a"
     },
     {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "full_history",
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
-      "tokens": 1161,
-      "latency": 0.00012539999443106353,
+      "tokens": 278,
+      "latency": 0.0022470999974757433,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true,
+        "cycle_collapse": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_a",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 278,
+      "latency": 0.0016355999978259206,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
         "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 269,
+      "latency": 0.0028412999818101525,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 269,
+      "latency": 0.0019580000080168247,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 269,
+      "latency": 0.0022504000226035714,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 269,
+      "latency": 0.0018162999767810106,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 269,
+      "latency": 0.002325099892914295,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": false
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "full_history",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1161,
+      "latency": 0.0002592999953776598,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -144,7 +366,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 136,
-      "latency": 2.9400005587376654e-05,
+      "latency": 5.8999983593821526e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -161,12 +383,12 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 215,
-      "latency": 4.360001184977591e-05,
+      "latency": 0.00014049990568310022,
       "cost": 0.0,
       "probes": {
         "recall": false,
         "artifact": false,
-        "continuation": false,
+        "continuation": true,
         "decision": false
       },
       "determinism": "n/a"
@@ -178,7 +400,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 942,
-      "latency": 0.002303600005689077,
+      "latency": 0.006419499986805022,
       "cost": 0.0,
       "probes": {
         "recall": true,
@@ -190,19 +412,121 @@
       "determinism": "yes"
     },
     {
-      "fixture": "research_agent_short.json",
-      "length": "short",
-      "method": "full_history",
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_a",
       "tier": "n/a",
       "run": 1,
-      "tokens": 119,
-      "latency": 1.440000778529793e-05,
+      "tokens": 942,
+      "latency": 0.0036906000459566712,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
         "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 954,
+      "latency": 0.0034790999488905072,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 954,
+      "latency": 0.005714299972169101,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 954,
+      "latency": 0.004057099926285446,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 954,
+      "latency": 0.0038747000508010387,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "coding_agent_long.json",
+      "length": "long",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 954,
+      "latency": 0.004367099958471954,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "full_history",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 119,
+      "latency": 5.259993486106396e-05,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -213,13 +537,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 119,
-      "latency": 1.239999255631119e-05,
+      "latency": 5.879998207092285e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -230,13 +554,13 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 119,
-      "latency": 1.7499987734481692e-05,
+      "latency": 8.500006515532732e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -247,7 +571,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 77,
-      "latency": 0.00021609998657368124,
+      "latency": 0.0008719000034034252,
       "cost": 0.0,
       "probes": {
         "recall": true,
@@ -259,19 +583,121 @@
       "determinism": "yes"
     },
     {
-      "fixture": "research_agent_medium.json",
-      "length": "medium",
-      "method": "full_history",
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_a",
       "tier": "n/a",
       "run": 1,
-      "tokens": 411,
-      "latency": 6.730000313837081e-05,
+      "tokens": 77,
+      "latency": 0.0006828999612480402,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
         "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 79,
+      "latency": 0.000893099932000041,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 79,
+      "latency": 0.0006086999783292413,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 79,
+      "latency": 0.0006696999771520495,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 79,
+      "latency": 0.0007850999245420098,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_short.json",
+      "length": "short",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 79,
+      "latency": 0.0007301999721676111,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "full_history",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 411,
+      "latency": 6.659992504864931e-05,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -282,7 +708,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 150,
-      "latency": 4.120000812690705e-05,
+      "latency": 5.610007792711258e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -299,7 +725,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 211,
-      "latency": 9.329999738838524e-05,
+      "latency": 0.00017150002531707287,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -310,19 +736,139 @@
       "determinism": "n/a"
     },
     {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "trace_gc_pipeline",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.0024204000364989042,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true,
+        "cycle_collapse": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_a",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.0019588000141084194,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.002032299991697073,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.0018878000555559993,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.0023762000491842628,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.002206999924965203,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_medium.json",
+      "length": "medium",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 314,
+      "latency": 0.0015713999746367335,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": false,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
       "fixture": "research_agent_long.json",
       "length": "long",
       "method": "full_history",
       "tier": "n/a",
       "run": 1,
       "tokens": 1219,
-      "latency": 0.00014840000949334353,
+      "latency": 0.00014620006550103426,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -333,7 +879,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 88,
-      "latency": 2.780000795610249e-05,
+      "latency": 4.6600005589425564e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -350,7 +896,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 212,
-      "latency": 0.0001745000045048073,
+      "latency": 0.0001362999901175499,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -367,7 +913,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 1007,
-      "latency": 0.003859399992506951,
+      "latency": 0.0057218000292778015,
       "cost": 0.0,
       "probes": {
         "recall": true,
@@ -379,18 +925,120 @@
       "determinism": "yes"
     },
     {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_a",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1007,
+      "latency": 0.003887200029566884,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1019,
+      "latency": 0.004225300042890012,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1019,
+      "latency": 0.0051256000297144055,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1019,
+      "latency": 0.00398699997458607,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1019,
+      "latency": 0.004166499944403768,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "research_agent_long.json",
+      "length": "long",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1019,
+      "latency": 0.004663400002755225,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
       "fixture": "customer_support_short.json",
       "length": "short",
       "method": "full_history",
       "tier": "n/a",
       "run": 1,
       "tokens": 137,
-      "latency": 2.2299995180219412e-05,
+      "latency": 4.9200025387108326e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
+        "artifact": false,
+        "continuation": false,
         "decision": true
       },
       "determinism": "n/a"
@@ -402,12 +1050,12 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 137,
-      "latency": 1.889999839477241e-05,
+      "latency": 5.759997293353081e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
+        "artifact": false,
+        "continuation": false,
         "decision": true
       },
       "determinism": "n/a"
@@ -419,12 +1067,12 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 137,
-      "latency": 3.860000288113952e-05,
+      "latency": 9.109999518841505e-05,
       "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": true,
-        "continuation": true,
+        "artifact": false,
+        "continuation": false,
         "decision": true
       },
       "determinism": "n/a"
@@ -436,7 +1084,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 81,
-      "latency": 0.0003842000005533919,
+      "latency": 0.0008762000361457467,
       "cost": 0.0,
       "probes": {
         "recall": true,
@@ -448,19 +1096,121 @@
       "determinism": "yes"
     },
     {
-      "fixture": "customer_support_medium.json",
-      "length": "medium",
-      "method": "full_history",
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_a",
       "tier": "n/a",
       "run": 1,
-      "tokens": 404,
-      "latency": 4.120000812690705e-05,
+      "tokens": 81,
+      "latency": 0.0005772000877186656,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
         "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 83,
+      "latency": 0.0007678000256419182,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 83,
+      "latency": 0.0009709999430924654,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 83,
+      "latency": 0.0009483000030741096,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 83,
+      "latency": 0.0007499000057578087,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_short.json",
+      "length": "short",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 83,
+      "latency": 0.0013898999895900488,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "full_history",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 404,
+      "latency": 7.259997073560953e-05,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -471,7 +1221,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 151,
-      "latency": 3.15000070258975e-05,
+      "latency": 5.6399963796138763e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -488,7 +1238,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 208,
-      "latency": 5.5899989092722535e-05,
+      "latency": 0.00010110007133334875,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -499,19 +1249,139 @@
       "determinism": "n/a"
     },
     {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "full_history",
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "trace_gc_pipeline",
       "tier": "n/a",
       "run": 1,
-      "tokens": 1523,
-      "latency": 5.080000846646726e-05,
+      "tokens": 305,
+      "latency": 0.002140299999155104,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true,
+        "cycle_collapse": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_a",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 305,
+      "latency": 0.0017746000085026026,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
         "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 306,
+      "latency": 0.0017197999404743314,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 306,
+      "latency": 0.0017686999635770917,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 306,
+      "latency": 0.0019135000184178352,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 306,
+      "latency": 0.0018593999557197094,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_medium.json",
+      "length": "medium",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 306,
+      "latency": 0.0019169000443071127,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_long.json",
+      "length": "long",
+      "method": "full_history",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1523,
+      "latency": 0.00017629994545131922,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": false,
+        "continuation": false,
+        "decision": false
       },
       "determinism": "n/a"
     },
@@ -522,7 +1392,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 89,
-      "latency": 2.6399997295811772e-05,
+      "latency": 4.650000482797623e-05,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -539,7 +1409,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 205,
-      "latency": 5.4500007536262274e-05,
+      "latency": 0.000130099942907691,
       "cost": 0.0,
       "probes": {
         "recall": false,
@@ -556,7 +1426,7 @@
       "tier": "n/a",
       "run": 1,
       "tokens": 1136,
-      "latency": 0.002264299997477792,
+      "latency": 0.0049999000038951635,
       "cost": 0.0,
       "probes": {
         "recall": true,
@@ -568,778 +1438,106 @@
       "determinism": "yes"
     },
     {
-      "fixture": "coding_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 98,
-      "latency": 5.099420000013197,
-      "cost": 3.7425e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": false,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T06:23:42.135574"
-    },
-    {
-      "fixture": "coding_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 65,
-      "latency": 4.367498300009174,
-      "cost": 2.7524999999999998e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": false,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:02:15.027749"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 84,
-      "latency": 4.246972299995832,
-      "cost": 4.95e-05,
-      "probes": {
-        "recall": false,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:02:34.279403"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 109,
-      "latency": 4.510993800009601,
-      "cost": 5.699999999999999e-05,
-      "probes": {
-        "recall": false,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:02:53.794451"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 131,
-      "latency": 18.813949200004572,
-      "cost": 8.152499999999999e-05,
-      "probes": {
-        "recall": false,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:03:27.615382"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 567,
-      "latency": 8.757967699988512,
-      "cost": 0.000257175,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:04:19.643916"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 134,
-      "latency": 19.879023199988296,
-      "cost": 8.2425e-05,
-      "probes": {
-        "recall": false,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:16:34.578369"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 407,
-      "latency": 6.187789599993266,
-      "cost": 0.00020917499999999998,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:16:55.771388"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 194,
-      "latency": 38.05683109999518,
-      "cost": 0.000180975,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:24:31.470651"
-    },
-    {
-      "fixture": "research_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 103,
-      "latency": 4.653749999997672,
-      "cost": 3.9825e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": false,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:25:35.353505"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 148,
-      "latency": 48.399095700006,
-      "cost": 0.00016717499999999998,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:34:00.403002"
-    },
-    {
-      "fixture": "research_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 86,
-      "latency": 6.397017000010237,
-      "cost": 3.4725000000000004e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:34:21.805034"
-    },
-    {
-      "fixture": "research_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 204,
-      "latency": 7.208846299996367,
-      "cost": 9.2025e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:34:44.018178"
-    },
-    {
-      "fixture": "research_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 152,
-      "latency": 5.784877300000517,
-      "cost": 7.6425e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:35:04.807616"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 199,
-      "latency": 8.036018300015712,
-      "cost": 0.000151125,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:35:27.849287"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 177,
-      "latency": 7.521064200002002,
-      "cost": 0.000144525,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:35:50.377167"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 327,
-      "latency": 50.9430502000032,
-      "cost": 0.0002253,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:36:56.327967"
-    },
-    {
-      "fixture": "customer_support_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 106,
-      "latency": 5.997398099978454,
-      "cost": 4.2075e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-01T19:39:59.733385"
-    },
-    {
-      "fixture": "customer_support_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 129,
-      "latency": 5.68404510000255,
-      "cost": 4.8975e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T09:35:46.462782"
-    },
-    {
-      "fixture": "customer_support_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 162,
-      "latency": 6.113007200008724,
-      "cost": 7.89e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T18:17:52.925319"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 169,
-      "latency": 46.05303260002984,
-      "cost": 0.0001779,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T18:38:32.937824"
-    },
-    {
       "fixture": "customer_support_long.json",
       "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 127,
-      "latency": 14.398604599991813,
-      "cost": 0.000152325,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T18:40:17.902934"
-    },
-    {
-      "fixture": "customer_support_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 175,
-      "latency": 7.646596700011287,
-      "cost": 8.28e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T19:03:31.072670"
-    },
-    {
-      "fixture": "coding_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 49,
-      "latency": 4.248317699995823,
-      "cost": 2.2725e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": false,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T19:36:56.121136"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 137,
-      "latency": 8.355784399958793,
-      "cost": 6.539999999999999e-05,
-      "probes": {
-        "recall": false,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T19:37:19.487232"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 128,
-      "latency": 24.777430100017227,
-      "cost": 8.0625e-05,
-      "probes": {
-        "recall": false,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T20:14:36.624995"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 111,
-      "latency": 7.726715600001626,
-      "cost": 0.000120375,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-02T20:14:59.360703"
-    },
-    {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-1",
-      "run": 1,
-      "tokens": 234,
-      "latency": 39.00930899998639,
-      "cost": 0.000220275,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:25:00.645223"
-    },
-    {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 169,
-      "latency": 6.517421800002921,
-      "cost": 0.000164925,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:25:22.171552"
-    },
-    {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-2",
-      "run": 2,
-      "tokens": 283,
-      "latency": 40.85435849998612,
-      "cost": 0.000234975,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:29:25.702402"
-    },
-    {
-      "fixture": "coding_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 167,
-      "latency": 38.64690499997232,
-      "cost": 0.000172875,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:31:53.675329"
-    },
-    {
-      "fixture": "research_agent_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 73,
-      "latency": 4.864608799980488,
-      "cost": 3.0825000000000004e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:32:13.557714"
-    },
-    {
-      "fixture": "research_agent_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 163,
-      "latency": 7.051002599997446,
-      "cost": 7.9725e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:32:35.624773"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 185,
-      "latency": 7.188158900011331,
-      "cost": 0.000146925,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T10:32:57.828502"
-    },
-    {
-      "fixture": "research_agent_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 251,
-      "latency": 40.48902099998668,
-      "cost": 0.0002025,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T11:36:52.265686"
-    },
-    {
-      "fixture": "customer_support_short.json",
-      "length": "short",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 107,
-      "latency": 5.777497900009621,
-      "cost": 4.2375e-05,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T11:37:13.051465"
-    },
-    {
-      "fixture": "customer_support_medium.json",
-      "length": "medium",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 134,
-      "latency": 6.296258199959993,
-      "cost": 7.05e-05,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T11:37:34.354349"
-    },
-    {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "ai_summarize_single",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 249,
-      "latency": 8.133124899992254,
-      "cost": 0.000188925,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T11:37:57.495183"
-    },
-    {
-      "fixture": "customer_support_long.json",
-      "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-1",
-      "run": 3,
-      "tokens": 200,
-      "latency": 116.13786720001372,
-      "cost": 0.000210075,
-      "probes": {
-        "recall": true,
-        "artifact": false,
-        "continuation": true,
-        "decision": false
-      },
-      "determinism": "no",
-      "timestamp": "2026-08-04T12:31:44.196584"
-    },
-    {
-      "fixture": "coding_agent_medium.json",
-      "length": "medium",
-      "method": "trace_gc_pipeline",
+      "method": "ablation_a",
       "tier": "n/a",
       "run": 1,
-      "tokens": 278,
-      "latency": 0.0016233000060310587,
+      "tokens": 1136,
+      "latency": 0.005233700037933886,
       "cost": 0.0,
       "probes": {
         "recall": true,
         "artifact": true,
         "continuation": true,
-        "decision": true,
-        "cycle_collapse": true
-      },
-      "determinism": "yes"
-    },
-    {
-      "fixture": "research_agent_medium.json",
-      "length": "medium",
-      "method": "trace_gc_pipeline",
-      "tier": "n/a",
-      "run": 1,
-      "tokens": 314,
-      "latency": 0.0021020000058342703,
-      "cost": 0.0,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true,
-        "cycle_collapse": true
-      },
-      "determinism": "yes"
-    },
-    {
-      "fixture": "customer_support_medium.json",
-      "length": "medium",
-      "method": "trace_gc_pipeline",
-      "tier": "n/a",
-      "run": 1,
-      "tokens": 305,
-      "latency": 0.0013165999989723787,
-      "cost": 0.0,
-      "probes": {
-        "recall": true,
-        "artifact": true,
-        "continuation": true,
-        "decision": true,
-        "cycle_collapse": true
+        "decision": true
       },
       "determinism": "yes"
     },
     {
       "fixture": "customer_support_long.json",
       "length": "long",
-      "method": "ai_summarize_recursive",
-      "tier": "gemini-3.6-flash-3",
-      "run": 3,
-      "tokens": 283,
-      "latency": 36.10164879999502,
-      "cost": 0.000234975,
+      "method": "ablation_b",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1137,
+      "latency": 0.005017100018449128,
+      "cost": 0.0,
       "probes": {
         "recall": true,
-        "artifact": false,
+        "artifact": true,
         "continuation": true,
-        "decision": false
+        "decision": true
       },
-      "determinism": "no",
-      "timestamp": "2026-08-08T13:33:20.964431"
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_long.json",
+      "length": "long",
+      "method": "ablation_c",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1137,
+      "latency": 0.0051497999811545014,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_long.json",
+      "length": "long",
+      "method": "ablation_d",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1137,
+      "latency": 0.004279299988411367,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_long.json",
+      "length": "long",
+      "method": "ablation_e",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1137,
+      "latency": 0.0056056000757962465,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
+    },
+    {
+      "fixture": "customer_support_long.json",
+      "length": "long",
+      "method": "ablation_f",
+      "tier": "n/a",
+      "run": 1,
+      "tokens": 1137,
+      "latency": 0.0052695999620482326,
+      "cost": 0.0,
+      "probes": {
+        "recall": true,
+        "artifact": true,
+        "continuation": true,
+        "decision": true
+      },
+      "determinism": "yes"
     }
   ]
 }

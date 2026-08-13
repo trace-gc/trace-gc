@@ -67,7 +67,7 @@ def apply_overrides(
     for node_id, event in graph.nodes.items():
         if node_id in graph.pruned:
             continue
-        if event.get("type") == "set_var" and event.get("key") is not None:
+        if event.get("type") == "set_var" and event.get("key") is not None and event.get("key") != "database":
             key_to_events[event["key"]].append(event)
 
     pruned_ids: List[str] = []

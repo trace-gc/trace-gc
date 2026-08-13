@@ -18,6 +18,7 @@ from .dead_branch_sweeper import sweep_dead_branches
 from .dedup_engine import deduplicate_tool_calls
 from .topo_sampler import collapse_cycles
 from .receipts import collect_receipts
+from .semantic_engine import apply_semantic_pruning
 
 # ---------------------------------------------------------------------------
 # Rendering helpers – turn an event dict into a human‑readable string
@@ -108,7 +109,16 @@ def _build_state_graph(events: List[Dict[str, Any]]) -> StateGraph:
 # ---------------------------------------------------------------------------
 # Main entry point – run pipeline, render, and compute token metrics
 # ---------------------------------------------------------------------------
-def compact_events(events: List[Dict[str, Any]], prune_referenced_values: bool = True) -> Dict[str, Any]:
+def compact_events(
+    events: List[Dict[str, Any]],
+    prune_referenced_values: bool = True,
+    prune_semantic: bool = True,
+    prune_duplicates: bool = True,
+    prune_superseded: bool = True,
+    prune_errors: bool = True,
+    prune_obsolete_reads: bool = False,
+    prune_redundant_verifications: bool = False
+) -> Dict[str, Any]:
     """Run the full deterministic compaction pipeline and produce a prompt.
 
     Returns a mapping with the following keys:
@@ -130,6 +140,16 @@ def compact_events(events: List[Dict[str, Any]], prune_referenced_values: bool =
     apply_overrides(graph, prune_referenced_values=prune_referenced_values)   # stage 2
     deduplicate_tool_calls(graph)   # stage 3
     collapse_cycles(graph)          # stage 4
+    if prune_semantic:
+        apply_semantic_pruning(
+            graph,
+            prune_referenced_values=prune_referenced_values,
+            prune_duplicates=prune_duplicates,
+            prune_superseded=prune_superseded,
+            prune_errors=prune_errors,
+            prune_obsolete_reads=prune_obsolete_reads,
+            prune_redundant_verifications=prune_redundant_verifications
+        )  # stage 5
 
     pruned_ids = sorted(list(graph.pruned))
     receipts = collect_receipts(graph)

@@ -163,12 +163,80 @@ registry.register(
 )
 
 
+# -- 6. Semantic Technology Choice Rule --
+def extract_tech_choice(match: re.Match, text: str) -> dict:
+    # If the text is a structured key-value pair, fall back to extract_key_value behavior
+    kv_match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_-]*)\s*[:=]\s*([^\n\r]+)$", text)
+    if kv_match:
+        return extract_key_value(kv_match, text)
+
+    lower_text = text.lower()
+
+    # Ambiguous, conditional, negated, or requirement-based statements should not be treated
+    # as simple database assignments to prevent false pruning.
+    ambiguous_keywords = {"not", "don't", "never", "avoid", "required", "requirement", "customer", "if", "unless", "conditional"}
+    words = set(re.findall(r"\b\w+\b", lower_text))
+    if words.intersection(ambiguous_keywords):
+        raise ValueError("Negated or requirement statement - fallback to text_chunk")
+
+    # Determine target technology
+    to_match = re.search(r"\bto\s+(postgresql|postgres|redis|mysql|sqlite)\b", lower_text)
+    if to_match:
+        raw_tech = to_match.group(1)
+    else:
+        raw_tech = match.group(1)
+
+    raw_tech = raw_tech.lower()
+
+    # Normalize tech name
+    tech = raw_tech
+    if "postgres" in raw_tech:
+        tech = "postgresql"
+    elif "redis" in raw_tech:
+        tech = "redis"
+    elif "sqlite" in raw_tech:
+        tech = "sqlite"
+
+    # Default to PROPOSED status
+    status = "PROPOSED"
+
+    # Strict transition evidence checks based on keywords in the line
+    if any(p in lower_text for p in ["verified", "successful", "success"]):
+        status = "CONFIRMED"
+    elif any(p in lower_text for p in ["configured", "active", "set up", "setup"]):
+        status = "ACTIVE"
+    elif any(p in lower_text for p in ["failed", "error"]):
+        status = "FAILED"
+    elif any(p in lower_text for p in ["abandoned", "pivot"]):
+        status = "ABANDONED"
+
+    return {
+        "type": "set_var",
+        "key": "database",
+        "value": tech,
+        "status": status,
+        "confidence": 1.0,
+        "provenance": {
+            "source_text": text.strip()
+        }
+    }
+
+
+registry.register(
+    "tech_choice",
+    r"(?i)\b(postgresql|postgres|redis|mysql|sqlite)\b",
+    30,
+    extract_tech_choice
+)
+
+
+
 def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[dict]:
     """Parse unstructured text blocks and extract structured TraceGC events rules-based."""
     extracted_events: list[dict] = []
 
     block_rules = [r for r in registry.rules if r["name"] in {"git_diff", "git_commit", "pytest_summary"}]
-    line_rules = [r for r in registry.rules if r["name"] in {"key_value", "log_error"}]
+    line_rules = [r for r in registry.rules if r["name"] in {"key_value", "log_error", "tech_choice"}]
 
     # Find block-level matches first
     matches = []
