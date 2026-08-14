@@ -113,3 +113,102 @@ def test_prune_referenced_values_false_unreferenced_still_pruned():
     result = compact_events(events, prune_referenced_values=False)
     assert "sv1" in result["pruned_ids"], "Unreferenced older values must still be pruned in replay-safe mode"
     assert "sv2" not in result["pruned_ids"]
+
+
+def test_tracked_decision_keys_generalized():
+    """Verify tracked_decision_keys specifies which keys get decision-lifecycle treatment vs plain override."""
+    events = [
+        {"id": "v1", "type": "set_var", "timestamp": 100, "key": "auth_provider", "value": "oauth"},
+        {"id": "v2", "type": "set_var", "timestamp": 200, "key": "auth_provider", "value": "saml"},
+        {"id": "c1", "type": "set_var", "timestamp": 150, "key": "cache_backend", "value": "redis"},
+        {"id": "c2", "type": "set_var", "timestamp": 250, "key": "cache_backend", "value": "memcached"},
+    ]
+    res = compact_events(events, tracked_decision_keys={"auth_provider"})
+    assert "v1" in res["pruned_ids"]
+    assert "c1" in res["pruned_ids"]
+    assert res["graph"].prune_reasons["v1"] == "superseded by v2"
+    assert res["graph"].prune_reasons["c1"] == "overridden by c2"
+
+
+def test_untracked_key_default_path():
+    """Verify that when tracked_decision_keys is not passed (None), default path treats all set_var
+    keys as decision-tracked ('superseded by st2')."""
+    graph = StateGraph()
+    graph.add_node({"id": "st1", "type": "set_var", "timestamp": 100, "key": "session_timeout", "value": 30})
+    graph.add_node({"id": "st2", "type": "set_var", "timestamp": 200, "key": "session_timeout", "value": 60})
+
+    pruned = apply_overrides(graph)  # tracked_decision_keys not passed -> default path (None)
+    assert "st1" in pruned
+    assert "st2" not in pruned
+    assert graph.prune_reasons["st1"] == "superseded by st2"
+
+
+def test_tracked_decision_keys_preserves_untracked_pruning():
+    """Verify that passing tracked_decision_keys={"auth_provider"} does NOT disable
+    ordinary keep-latest override pruning for untracked keys like 'session_timeout'."""
+    graph = StateGraph()
+    # auth_provider (tracked decision key)
+    graph.add_node({"id": "ap1", "type": "set_var", "timestamp": 100, "key": "auth_provider", "value": "oauth"})
+    graph.add_node({"id": "ap2", "type": "set_var", "timestamp": 200, "key": "auth_provider", "value": "saml"})
+
+    # session_timeout (untracked key)
+    graph.add_node({"id": "st1", "type": "set_var", "timestamp": 150, "key": "session_timeout", "value": 30})
+    graph.add_node({"id": "st2", "type": "set_var", "timestamp": 250, "key": "session_timeout", "value": 60})
+
+    pruned = apply_overrides(graph, tracked_decision_keys={"auth_provider"})
+
+    # Both ap1 (decision key) and st1 (untracked key) must be pruned!
+    assert "ap1" in pruned
+    assert "st1" in pruned
+    assert "ap2" not in pruned
+    assert "st2" not in pruned
+
+    # ap1 gets decision-lifecycle treatment (superseded by ap2)
+    assert graph.prune_reasons["ap1"] == "superseded by ap2"
+    # st1 gets plain override treatment (overridden by st2)
+    assert graph.prune_reasons["st1"] == "overridden by st2"
+
+
+def test_decision_lifecycle_transitions_generic_key():
+    """Verify ACTIVE -> PROPOSED -> CONFIRMED -> SUPERSEDED lifecycle transitions
+    and metadata using a non-'database' key ('auth_provider')."""
+    graph = StateGraph()
+
+    # 1. PROPOSED: Initial decision proposed via set_var
+    e_prop = {"id": "e_prop", "type": "set_var", "timestamp": 100, "key": "auth_provider", "value": "oauth"}
+    graph.add_node(e_prop)
+
+    # 2. ACTIVE / CONFIRMED: Action & result using auth_provider=oauth
+    tc_use = {"id": "tc1", "type": "tool_call", "timestamp": 150, "tool_name": "authenticate", "arguments": {"auth_provider": "oauth"}}
+    tr_confirm = {"id": "tr1", "type": "tool_result", "timestamp": 160, "call_id": "tc1", "result": "oauth_connected"}
+    graph.add_node(tc_use)
+    graph.add_node(tr_confirm)
+
+    # 3. SUPERSEDED: Newer set_var updating auth_provider to saml
+    e_new = {"id": "e_new", "type": "set_var", "timestamp": 200, "key": "auth_provider", "value": "saml"}
+    graph.add_node(e_new)
+
+    # Apply overrides with tracked_decision_keys={"auth_provider"}
+    pruned = apply_overrides(graph, tracked_decision_keys={"auth_provider"})
+
+    # Verify lifecycle transitions and metadata:
+    # 1. Proposed/Initial event e_prop is now SUPERSEDED
+    assert "e_prop" in pruned
+    assert "e_prop" in graph.pruned
+    assert graph.prune_reasons["e_prop"] == "superseded by e_new"
+
+    # 2. Receipt stub generated for e_prop encoding superseded state for recovery
+    assert "e_prop" in graph.receipts
+    rcpt = graph.receipts["e_prop"]
+    assert rcpt["target_id"] == "e_prop"
+    assert rcpt["status"] == "pruned"
+
+    # 3. Direct 'supersedes' edge linking newest (e_new) -> superseded (e_prop)
+    supersedes_edges = [(src, dst, typ) for src, dst, typ in graph.edges if typ == "supersedes"]
+    assert ("e_new", "e_prop", "supersedes") in supersedes_edges
+
+    # 4. New event e_new remains ACTIVE / surviving
+    assert "e_new" not in graph.pruned
+
+
+

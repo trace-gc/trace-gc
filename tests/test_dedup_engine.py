@@ -82,8 +82,10 @@ def test_no_dedup_differing_results():
     assert len(pruned) == 0
 
 
-def test_non_json_serializable_args_fallback():
-    """Tool calls with non-JSON-serializable arguments use str() fallback for dedup key."""
+def test_non_json_serializable_args_fallback(caplog):
+    """Tool calls with non-JSON-serializable arguments use str() fallback for dedup key and emit a warning."""
+    import logging
+
     class CustomObj:
         def __repr__(self):
             return "CustomObj()"
@@ -92,17 +94,25 @@ def test_non_json_serializable_args_fallback():
     obj = CustomObj()
     # Two identical calls with a non-serializable arg object (same repr -> same dedup key)
     events = [
-        {"id": "tc1", "type": "tool_call", "timestamp": 100, "tool_name": "run", "arguments": obj},
+        {"id": "tc1", "type": "tool_call", "timestamp": 100, "tool_name": "run", "arguments": {"item": obj}},
         {"id": "tr1", "type": "tool_result", "timestamp": 101, "call_id": "tc1", "result": "x"},
-        {"id": "tc2", "type": "tool_call", "timestamp": 200, "tool_name": "run", "arguments": obj},
+        {"id": "tc2", "type": "tool_call", "timestamp": 200, "tool_name": "run", "arguments": {"item": obj}},
         {"id": "tr2", "type": "tool_result", "timestamp": 201, "call_id": "tc2", "result": "x"},
     ]
     for ev in events:
         graph.add_node(ev)
 
-    pruned = deduplicate_tool_calls(graph)
+    with caplog.at_level(logging.WARNING):
+        pruned = deduplicate_tool_calls(graph)
+
     # tc1/tr1 survive; tc2/tr2 are duplicates
     assert set(pruned) == {"tc2", "tr2"}
+
+    # Verify warning fired with tool name and non-JSON-serializable note
+    assert any(
+        "run" in record.message and "non-JSON-serializable" in record.message
+        for record in caplog.records
+    )
 
 
 def test_orphan_tool_call_not_deduplicated():

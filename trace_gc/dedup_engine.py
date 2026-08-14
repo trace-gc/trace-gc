@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections import defaultdict
 from typing import List, Dict, Any
 
 from .graph import StateGraph
 from .retention_policy import is_protected
+
+logger = logging.getLogger(__name__)
 
 
 def deduplicate_tool_calls(graph: StateGraph) -> List[str]:
@@ -38,6 +41,12 @@ def deduplicate_tool_calls(graph: StateGraph) -> List[str]:
                 res_str = json.dumps(res_node.get("result"), sort_keys=True)
             except (TypeError, ValueError):
                 # Fallback to string representation if not json serializable
+                tool_name = node.get("tool_name", "unknown")
+                logger.warning(
+                    "Deduplication for tool '%s' (event '%s') may be unreliable due to non-JSON-serializable arguments",
+                    tool_name,
+                    node_id,
+                )
                 args_str = str(node.get("arguments"))
                 res_str = str(res_node.get("result"))
 

@@ -113,6 +113,35 @@ result = client.compact()
 print(result["prompt"])
 ```
 
+### Storage Backends (In-Memory & SQLite)
+
+`TraceGC` supports customizable storage backends via `trace-gc-storage`. By default, `TraceGC()` uses in-memory storage (`MemoryStore()`). To persist session events and receipts across restarts, pass a `SQLiteStore`:
+
+```python
+from trace_gc import TraceGC
+from trace_gc_storage import MemoryStore, SQLiteStore
+
+# 1. Default in-memory usage
+client_mem = TraceGC()  # uses MemoryStore()
+
+# 2. SQLite-backed usage (persists to file)
+store = SQLiteStore("agent_history.db")
+client_db = TraceGC(store=store, context_id="session_123")
+
+client_db.add_event({
+    "id": "e001", "type": "set_var", "timestamp": 1000, "key": "model", "value": "v1"
+})
+client_db.add_event({
+    "id": "e002", "type": "set_var", "timestamp": 2000, "key": "model", "value": "v2"
+})
+res = client_db.compact()
+
+# Re-opening a new client instance with the same DB file and context_id restores trace history
+client_reloaded = TraceGC(store=SQLiteStore("agent_history.db"), context_id="session_123")
+res_reloaded = client_reloaded.compact()
+print(res_reloaded["prompt"])
+```
+
 ### Low-Level API (Single-Shot Compaction)
 If you already have a full, pre-collected list of events upfront, you can use the lower-level single-shot function `compact_events()` directly:
 

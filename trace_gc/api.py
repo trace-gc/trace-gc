@@ -65,32 +65,54 @@ class TraceGC:
     added one by one and compacted on demand.
     """
 
-    def __init__(self) -> None:
-        self.events: List[Dict[str, Any]] = []
+    def __init__(
+        self,
+        store: Any = None,
+        context_id: Optional[str] = None,
+        tracked_decision_keys: set[str] | None = None,
+    ) -> None:
+        if store is None:
+            from trace_gc_storage import MemoryStore
+            store = MemoryStore()
+        self.store = store
+        self.context_id = self.store.create(context_id)
+        self.tracked_decision_keys: set[str] | None = tracked_decision_keys
         self.graph: StateGraph = StateGraph()
+
+    @property
+    def events(self) -> List[Dict[str, Any]]:
+        """Returns all events stored for the current context."""
+        return self.store.load_events(self.context_id)
 
     def add_event(self, event: Dict[str, Any]) -> None:
         """Validate and append a single event to the history."""
         validated = validate_event(event)
-        self.events.append(validated)
-        self.graph.add_node(validated)
         
         parent = validated.get("parent_id")
         if parent:
-            if parent not in self.graph.nodes:
+            existing_ids = {e["id"] for e in self.events}
+            if parent not in existing_ids and parent not in self.graph.nodes:
                 raise ValueError(
                     f"parent_id '{parent}' not found in graph — events must be added in dependency order"
                 )
+        
+        self.store.append(self.context_id, [validated])
+        self.graph.add_node(validated)
+        if parent:
             self.graph.add_edge(parent, validated["id"], "sequence")
 
-    def compact(self) -> Dict[str, Any]:
+    def compact(self, tracked_decision_keys: set[str] | None = None) -> Dict[str, Any]:
         """Runs the full compaction pipeline against all events added so far."""
-        result = compact_events(self.events)
+        events = self.events
+        keys = tracked_decision_keys if tracked_decision_keys is not None else self.tracked_decision_keys
+        result = compact_events(events, tracked_decision_keys=keys)
         self.graph = result["graph"]
         return result
 
     def get_receipt(self, node_id: str) -> Dict[str, Any]:
         """Retrieve the original event dict/receipt for a pruned node ID."""
+        if node_id not in self.graph.nodes:
+            self.compact()
         return _get_receipt(self.graph, node_id)
 
 
@@ -677,11 +699,20 @@ def reconstruct_output(
     return reconstructed
 
 
-def compact(messages: Any, semantic_extraction: bool = True, prune_referenced_values: bool = True) -> CompactionResult:
+def compact(
+    messages: Any,
+    semantic_extraction: bool = True,
+    prune_referenced_values: bool = True,
+    tracked_decision_keys: set[str] | None = None,
+) -> CompactionResult:
     """Run the deterministic compaction pipeline on a universal input messages list."""
     events, orig_inputs, orig_types = normalize_input(messages, semantic_extraction=semantic_extraction)
 
-    result = compact_events(events, prune_referenced_values=prune_referenced_values)
+    result = compact_events(
+        events,
+        prune_referenced_values=prune_referenced_values,
+        tracked_decision_keys=tracked_decision_keys,
+    )
     graph = result["graph"]
     pruned_ids = set(result["pruned_ids"])
 

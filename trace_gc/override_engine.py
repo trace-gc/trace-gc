@@ -48,9 +48,11 @@ def _is_value_referenced_by_active_tool_call(
 
 
 def apply_overrides(
-    graph: StateGraph, prune_referenced_values: bool = True
+    graph: StateGraph,
+    prune_referenced_values: bool = True,
+    tracked_decision_keys: set[str] | None = None,
 ) -> List[str]:
-    """Detect and prune superseded ``set_var`` events, returning the pruned IDs.
+    """Detect and prune superseded/overridden ``set_var`` events, returning the pruned IDs.
 
     Parameters
     ----------
@@ -61,6 +63,13 @@ def apply_overrides(
         of whether any active tool_call still references it (context-only mode).
         When ``False``, older values are retained if they are still referenced
         by an active tool_call's arguments (replay-safe mode).
+    tracked_decision_keys:
+        Optional set of variable keys to receive decision-lifecycle treatment
+        ("superseded by ..."). If ``None`` (default), all ``set_var`` keys receive
+        decision-lifecycle treatment, matching pre-refactor behavior. When passed
+        explicitly (e.g. ``{"auth_provider"}``), listed keys receive decision-lifecycle
+        treatment ("superseded by ...") while unlisted keys still undergo normal
+        keep-latest override pruning ("overridden by ...").
     """
     # Group ``set_var`` events by their ``key``
     key_to_events: dict[str, List[dict]] = defaultdict(list)
@@ -77,7 +86,13 @@ def apply_overrides(
         events.sort(key=lambda e: e["timestamp"])
         newest = events[-1]
         newest_id = newest["id"]
-        # Older events are superseded
+        is_decision_tracked = (
+            key in tracked_decision_keys
+            if tracked_decision_keys is not None
+            else True
+        )
+
+        # Older events are superseded or overridden
         for older in events[:-1]:
             older_id = older["id"]
 
@@ -88,11 +103,15 @@ def apply_overrides(
             ):
                 continue  # keep this older value; skip pruning it
 
-            # Add supersedes edge from newest -> older
-            graph.add_edge(newest_id, older_id, "supersedes")
+            if is_decision_tracked:
+                edge_type = "supersedes"
+                reason = f"superseded by {newest_id}"
+            else:
+                edge_type = "overridden"
+                reason = f"overridden by {newest_id}"
 
-            # Store what would have pruned it
-            reason = f"superseded by {newest_id}"
+            # Add edge from newest -> older
+            graph.add_edge(newest_id, older_id, edge_type)
             graph.prune_reasons[older_id] = reason
 
             if is_protected(older):

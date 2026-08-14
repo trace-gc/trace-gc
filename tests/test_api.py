@@ -82,3 +82,37 @@ def test_trace_gc_nonexistent_parent_raises():
             "content": "Child"
         })
     assert "parent_id 'nonexistent_parent' not found in graph — events must be added in dependency order" in str(excinfo.value)
+
+
+def test_trace_gc_sqlite_store_persistence(tmp_path):
+    """Verify TraceGC client using SQLiteStore persists events and compactions across new client instances."""
+    from trace_gc_storage import SQLiteStore
+
+    db_file = str(tmp_path / "agent_persistence.db")
+    ctx_id = "sess_sqlite_test"
+
+    # Instance 1: Create client, add events, and compact
+    store1 = SQLiteStore(db_file)
+    client1 = TraceGC(store=store1, context_id=ctx_id)
+    client1.add_event({"id": "v1", "type": "set_var", "timestamp": 100, "key": "k", "value": 1})
+    client1.add_event({"id": "v2", "type": "set_var", "timestamp": 200, "key": "k", "value": 2})
+
+    res1 = client1.compact()
+    assert "v1" in res1["pruned_ids"]
+    assert "v2" not in res1["pruned_ids"]
+
+    # Instance 2: New client instance pointed at same DB file and context_id
+    store2 = SQLiteStore(db_file)
+    client2 = TraceGC(store=store2, context_id=ctx_id)
+    res2 = client2.compact()
+
+    assert "v1" in res2["pruned_ids"]
+    assert len(res2["compact_events"]) == 1
+    assert res2["compact_events"][0]["value"] == 2
+
+    # Receipt retrieval on fresh instance
+    rcpt = client2.get_receipt("v1")
+    assert rcpt["id"] == "v1"
+    assert rcpt["pruned"] is True
+    assert rcpt["value"] == 1
+
