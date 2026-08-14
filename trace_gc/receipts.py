@@ -28,12 +28,7 @@ def get_receipt(graph: StateGraph, node_id: str) -> dict:
 
     Raises ``KeyError`` if *node_id* is not in ``graph.nodes``.
     """
-    if node_id not in graph.nodes:
-        raise KeyError(f"Unknown node id: {node_id}")
-    original = graph.nodes[node_id]
-    result = dict(original)
-    if node_id in graph.decision_status:
-        result["status"] = graph.decision_status[node_id]
+    result = graph.get_node_with_status(node_id)
     if node_id in graph.pruned:
         result["pruned"] = True
     return result

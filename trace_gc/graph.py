@@ -50,6 +50,18 @@ class StateGraph:
             raise ValueError(f"Duplicate event id: {node_id!r}")
         self.nodes[node_id] = event
 
+    def get_node_with_status(self, node_id: str) -> dict:
+        """Return a copy of node's event dict with derived decision_status attached if present.
+
+        Raises KeyError if node_id is not in self.nodes.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Unknown node id: {node_id}")
+        result = dict(self.nodes[node_id])
+        if node_id in self.decision_status:
+            result["status"] = self.decision_status[node_id]
+        return result
+
     def add_edge(self, src: str, dst: str, edge_type: str) -> None:
         self.edges.append((src, dst, edge_type))
         self._rev[dst].append((src, edge_type))

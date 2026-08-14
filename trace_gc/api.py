@@ -95,12 +95,7 @@ class CompactionResult:
         Returns a copy of the original event dict with ``pruned=True`` added.
         The original dict is never modified.
         """
-        if node_id not in self._graph.nodes:
-            raise KeyError(f"Unknown node id: {node_id}")
-        original = self._graph.nodes[node_id]
-        result = dict(original)
-        if node_id in self._graph.decision_status:
-            result["status"] = self._graph.decision_status[node_id]
+        result = self._graph.get_node_with_status(node_id)
         if node_id in self._graph.pruned:
             result["pruned"] = True
         return result
