@@ -785,10 +785,12 @@ def compact(
     prune_errors: bool = True,
     prune_obsolete_reads: bool = False,
     prune_redundant_verifications: bool = False,
+    cache: Optional[SemanticCache] = None,
 ) -> CompactionResult:
     """Run the deterministic compaction pipeline on a universal input messages list."""
+    effective_cache = cache if cache is not None else _default_semantic_cache
     events, orig_inputs, orig_types = normalize_input(
-        messages, semantic_extraction=semantic_extraction, cache=_default_semantic_cache
+        messages, semantic_extraction=semantic_extraction, cache=effective_cache
     )
 
     result = compact_events(

@@ -123,7 +123,7 @@ def test_tracked_decision_keys_generalized():
         {"id": "c1", "type": "set_var", "timestamp": 150, "key": "cache_backend", "value": "redis"},
         {"id": "c2", "type": "set_var", "timestamp": 250, "key": "cache_backend", "value": "memcached"},
     ]
-    res = compact_events(events, tracked_decision_keys={"auth_provider"})
+    res = compact_events(events, tracked_decision_keys={"auth_provider"}, prune_semantic=False)
     assert "v1" in res["pruned_ids"]
     assert "c1" in res["pruned_ids"]
     assert res["graph"].prune_reasons["v1"] == "superseded by v2"
