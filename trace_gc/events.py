@@ -91,6 +91,17 @@ def validate_event(event: Dict[str, Any]) -> Dict[str, Any]:
     if "retain_until" in event:
         _require(event["retain_until"] in {"task_end", "session_end", None}, "'retain_until' must be one of: task_end, session_end, None")
 
+    # Phase 3 Semantic Validation
+    if "status" in event:
+        _require(event["status"] in {"PROPOSED", "ACTIVE", "CONFIRMED", "ABANDONED", "FAILED", "SUPERSEDED"}, "'status' must be one of: PROPOSED, ACTIVE, CONFIRMED, ABANDONED, FAILED, SUPERSEDED")
+    if "confidence" in event:
+        conf = event["confidence"]
+        _require(isinstance(conf, (int, float)) and 0.0 <= conf <= 1.0, "'confidence' must be a numeric value between 0.0 and 1.0")
+    if "source_text" in event:
+        _require(isinstance(event["source_text"], str), "'source_text' must be a string")
+    if "provenance" in event:
+        _require(isinstance(event["provenance"], dict), "'provenance' must be a dict")
+
     # Type-specific validation for coding agent events
     if ev_type == "file_read":
         _require(isinstance(event["path"], str) and event["path"], "'path' must be a non-empty string")

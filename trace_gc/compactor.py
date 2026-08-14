@@ -9,7 +9,7 @@ and the list of surviving event dictionaries.
 
 from __future__ import annotations
 
-from typing import List, Dict, Any, Set
+from typing import List, Dict, Any, Set, Optional
 
 from .events import validate_event
 from .graph import StateGraph
@@ -18,6 +18,7 @@ from .dead_branch_sweeper import sweep_dead_branches
 from .dedup_engine import deduplicate_tool_calls
 from .topo_sampler import collapse_cycles
 from .receipts import collect_receipts
+from .semantic_engine import apply_semantic_pruning
 
 # ---------------------------------------------------------------------------
 # Rendering helpers – turn an event dict into a human‑readable string
@@ -111,7 +112,13 @@ def _build_state_graph(events: List[Dict[str, Any]]) -> StateGraph:
 def compact_events(
     events: List[Dict[str, Any]],
     prune_referenced_values: bool = True,
-    tracked_decision_keys: set[str] | None = None,
+    tracked_decision_keys: Optional[Set[str]] = None,
+    prune_semantic: bool = True,
+    prune_duplicates: bool = True,
+    prune_superseded: bool = True,
+    prune_errors: bool = True,
+    prune_obsolete_reads: bool = False,
+    prune_redundant_verifications: bool = False,
 ) -> Dict[str, Any]:
     """Run the full deterministic compaction pipeline and produce a prompt.
 
@@ -138,6 +145,17 @@ def compact_events(
     )   # stage 2
     deduplicate_tool_calls(graph)   # stage 3
     collapse_cycles(graph)          # stage 4
+    if prune_semantic:
+        apply_semantic_pruning(
+            graph,
+            prune_referenced_values=prune_referenced_values,
+            prune_duplicates=prune_duplicates,
+            prune_superseded=prune_superseded,
+            prune_errors=prune_errors,
+            prune_obsolete_reads=prune_obsolete_reads,
+            prune_redundant_verifications=prune_redundant_verifications,
+            tracked_decision_keys=tracked_decision_keys,
+        )  # stage 5
 
     pruned_ids = sorted(list(graph.pruned))
     receipts = collect_receipts(graph)

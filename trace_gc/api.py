@@ -17,6 +17,58 @@ from .receipts import get_receipt as _get_receipt
 from .semantic import extract_semantic_events
 
 
+import hashlib
+
+class SemanticCache:
+    """Cache for semantically extracted events to prevent redundant regex parsing."""
+    def __init__(self, parser_version: str = "1.0.0") -> None:
+        self.parser_version = parser_version
+        self.entries: dict[str, dict] = {}
+
+    def get(self, event_id: str) -> Optional[dict]:
+        entry = self.entries.get(event_id)
+        if entry and entry.get("parser_version") == self.parser_version:
+            return entry
+        return None
+
+    def set(
+        self,
+        event_id: str,
+        semantic_representation: list[dict],
+        source_provenance: dict,
+        extraction_status: str
+    ) -> None:
+        self.entries[event_id] = {
+            "event_id": event_id,
+            "semantic_representation": semantic_representation,
+            "parser_version": self.parser_version,
+            "source_provenance": source_provenance,
+            "extraction_status": extraction_status
+        }
+
+    def clear(self) -> None:
+        self.entries.clear()
+
+
+def get_stable_event_id(item: Any, idx: int) -> str:
+    """Compute a stable cache key based on item contents and/or explicit ID."""
+    if isinstance(item, dict) and "id" in item:
+        return str(item["id"])
+
+    # Fallback: hash the content to ensure uniqueness
+    if isinstance(item, str):
+        content_bytes = item.encode("utf-8")
+    elif hasattr(item, "content"):
+        content_bytes = str(getattr(item, "content", "")).encode("utf-8")
+    elif isinstance(item, dict):
+        content_bytes = json.dumps(item, sort_keys=True).encode("utf-8")
+    else:
+        content_bytes = str(item).encode("utf-8")
+
+    h = hashlib.md5(content_bytes).hexdigest()
+    return f"h_{h}"
+
+
 @dataclass
 class Receipt:
     node_id: str
@@ -70,6 +122,7 @@ class TraceGC:
         store: Any = None,
         context_id: Optional[str] = None,
         tracked_decision_keys: set[str] | None = None,
+        cache: Optional[SemanticCache] = None,
     ) -> None:
         if store is None:
             from trace_gc_storage import MemoryStore
@@ -78,6 +131,7 @@ class TraceGC:
         self.context_id = self.store.create(context_id)
         self.tracked_decision_keys: set[str] | None = tracked_decision_keys
         self.graph: StateGraph = StateGraph()
+        self.cache = cache or SemanticCache()
 
     @property
     def events(self) -> List[Dict[str, Any]]:
@@ -122,13 +176,41 @@ def is_lc_message(msg: Any) -> bool:
 
 
 def normalize_input(
-    messages: Any, semantic_extraction: bool = True
+    messages: Any,
+    semantic_extraction: bool = True,
+    cache: Optional[SemanticCache] = None
 ) -> tuple[list[dict[str, Any]], list[Any], list[str]]:
     """Normalize input messages of various shapes into standard trace events.
 
     Returns:
         (events, original_inputs_in_order, original_types_in_order)
     """
+    def get_extracted_events(content: str, ev_id: str, timestamp: int, item: Any, idx: int) -> list[dict]:
+        if not semantic_extraction:
+            return []
+
+        event_id = get_stable_event_id(item, idx)
+        if cache:
+            cached = cache.get(event_id)
+            if cached is not None:
+                adjusted_events = []
+                for sub_idx, ev in enumerate(cached["semantic_representation"]):
+                    ev_copy = dict(ev)
+                    ev_copy["id"] = f"ext_{ev_id}_{sub_idx}"
+                    if "timestamp" not in ev_copy or ev_copy["timestamp"] is None:
+                        ev_copy["timestamp"] = timestamp
+                    adjusted_events.append(ev_copy)
+                return adjusted_events
+
+        extracted = extract_semantic_events(content, prefix_id=ev_id, start_time=timestamp)
+        if cache:
+            cache.set(
+                event_id=event_id,
+                semantic_representation=extracted,
+                source_provenance={"content": content, "idx": idx},
+                extraction_status="success" if extracted else "skipped"
+            )
+        return extracted
     if isinstance(messages, str):
         raw_list = [messages]
     elif isinstance(messages, list):
@@ -152,9 +234,7 @@ def normalize_input(
         # -- String --
         if isinstance(item, str):
             ev_id = f"txt_{idx}"
-            ext_events = []
-            if semantic_extraction:
-                ext_events = extract_semantic_events(item, prefix_id=ev_id, start_time=idx * 10)
+            ext_events = get_extracted_events(item, ev_id, idx * 10, item, idx)
 
             if ext_events:
                 ext_events[0]["parent_id"] = prev_event_id
@@ -206,9 +286,7 @@ def normalize_input(
                 # Text content block (if present)
                 if content and isinstance(content, str):
                     ev_id = f"msg_{idx}_text"
-                    ext_events = []
-                    if semantic_extraction:
-                        ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+                    ext_events = get_extracted_events(content, ev_id, idx * 10, item, idx)
 
                     if ext_events:
                         ext_events[0]["parent_id"] = prev_event_id
@@ -282,8 +360,8 @@ def normalize_input(
             else:
                 ev_id = f"msg_{idx}"
                 ext_events = []
-                if semantic_extraction and isinstance(content, str):
-                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+                if isinstance(content, str):
+                    ext_events = get_extracted_events(content, ev_id, idx * 10, item, idx)
 
                 if ext_events:
                     ext_events[0]["parent_id"] = prev_event_id
@@ -317,9 +395,7 @@ def normalize_input(
 
             if isinstance(content, str):
                 ev_id = f"msg_{idx}"
-                ext_events = []
-                if semantic_extraction:
-                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+                ext_events = get_extracted_events(content, ev_id, idx * 10, item, idx)
 
                 if ext_events:
                     ext_events[0]["parent_id"] = prev_event_id
@@ -349,8 +425,8 @@ def normalize_input(
                         ev_id = f"msg_{idx}_blk_{b_idx}"
                         ext_events = []
                         blk_text = block.get("text", "")
-                        if semantic_extraction and blk_text:
-                            ext_events = extract_semantic_events(blk_text, prefix_id=ev_id, start_time=idx * 10 + b_idx)
+                        if blk_text:
+                            ext_events = get_extracted_events(blk_text, ev_id, idx * 10 + b_idx, item, idx)
 
                         if ext_events:
                             ext_events[0]["parent_id"] = prev_event_id
@@ -430,9 +506,7 @@ def normalize_input(
             if "AIMessage" in cls_name and tool_calls:
                 if content and isinstance(content, str):
                     ev_id = f"msg_{idx}_text"
-                    ext_events = []
-                    if semantic_extraction:
-                        ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+                    ext_events = get_extracted_events(content, ev_id, idx * 10, item, idx)
 
                     if ext_events:
                         ext_events[0]["parent_id"] = prev_event_id
@@ -498,8 +572,8 @@ def normalize_input(
             else:
                 ev_id = f"msg_{idx}"
                 ext_events = []
-                if semantic_extraction and isinstance(content, str):
-                    ext_events = extract_semantic_events(content, prefix_id=ev_id, start_time=idx * 10)
+                if isinstance(content, str):
+                    ext_events = get_extracted_events(content, ev_id, idx * 10, item, idx)
 
                 if ext_events:
                     ext_events[0]["parent_id"] = prev_event_id
@@ -529,9 +603,7 @@ def normalize_input(
         # -- Unsupported / Catch-all --
         else:
             ev_id = f"msg_{idx}"
-            ext_events = []
-            if semantic_extraction:
-                ext_events = extract_semantic_events(str(item), prefix_id=ev_id, start_time=idx * 10)
+            ext_events = get_extracted_events(str(item), ev_id, idx * 10, item, idx)
 
             if ext_events:
                 ext_events[0]["parent_id"] = prev_event_id
@@ -699,22 +771,45 @@ def reconstruct_output(
     return reconstructed
 
 
+_default_semantic_cache = SemanticCache()
+
+
 def compact(
     messages: Any,
     semantic_extraction: bool = True,
     prune_referenced_values: bool = True,
     tracked_decision_keys: set[str] | None = None,
+    prune_semantic: bool = True,
+    prune_duplicates: bool = True,
+    prune_superseded: bool = True,
+    prune_errors: bool = True,
+    prune_obsolete_reads: bool = False,
+    prune_redundant_verifications: bool = False,
 ) -> CompactionResult:
     """Run the deterministic compaction pipeline on a universal input messages list."""
-    events, orig_inputs, orig_types = normalize_input(messages, semantic_extraction=semantic_extraction)
+    events, orig_inputs, orig_types = normalize_input(
+        messages, semantic_extraction=semantic_extraction, cache=_default_semantic_cache
+    )
 
     result = compact_events(
         events,
         prune_referenced_values=prune_referenced_values,
         tracked_decision_keys=tracked_decision_keys,
+        prune_semantic=prune_semantic,
+        prune_duplicates=prune_duplicates,
+        prune_superseded=prune_superseded,
+        prune_errors=prune_errors,
+        prune_obsolete_reads=prune_obsolete_reads,
+        prune_redundant_verifications=prune_redundant_verifications,
     )
     graph = result["graph"]
     pruned_ids = set(result["pruned_ids"])
+
+    reconstructed = reconstruct_output(events, pruned_ids, orig_inputs, orig_types)
+
+    tokens_before = result["tokens_before"]
+    tokens_after = result["tokens_after"]
+    ratio = tokens_after / tokens_before if tokens_before > 0 else 1.0
 
     receipts: list[Receipt] = []
     for pid in result["pruned_ids"]:
@@ -724,14 +819,8 @@ def compact(
         ev_copy["pruned"] = True
         receipts.append(Receipt(node_id=pid, reason=reason, event=ev_copy))
 
-    compacted_messages = reconstruct_output(events, pruned_ids, orig_inputs, orig_types)
-
-    tokens_before = result["tokens_before"]
-    tokens_after = result["tokens_after"]
-    ratio = float(1.0 - (tokens_after / tokens_before)) if tokens_before > 0 else 0.0
-
     return CompactionResult(
-        messages=compacted_messages,
+        messages=reconstructed,
         receipts=receipts,
         tokens_before=tokens_before,
         tokens_after=tokens_after,
@@ -740,5 +829,5 @@ def compact(
         _graph=graph,
         _original_inputs=orig_inputs,
         _original_types=orig_types,
-        _semantic_extraction=semantic_extraction
+        _semantic_extraction=semantic_extraction,
     )

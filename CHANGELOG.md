@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] - Unreleased
+## [0.4.0] - 2026-08-13
+
+### Added
+- **Incremental Caching**: Added `SemanticCache` with stable content hashing (`get_stable_event_id`) and parser version invalidation to prevent redundant regex parsing.
+- **O(N) Compaction Optimizations**: Optimized graph traversal reference lookups in `apply_semantic_pruning` from \(O(N^2)\) to \(O(N)\) by pre-calculating active target targets, yielding a 35x latency reduction for 10K events.
+- **Obsolete Reads Compaction (Rule 5C)**: Compacts `file_read` / `view_file` calls when a subsequent write/edit modification occurs on the same file path.
+- **Redundant Verifications Compaction (Rule 5F)**: Compacts older successful tests and manual verifications, preserving only the latest success.
+- **Information Value Analysis Mode**: Added `analyze_retained_events` to inspect and classify trace compaction rationale, current state, and potential candidates.
+- **Ambiguity Fallback**: Prevents false pruning on negated, required, or conditional statements by falling back to standard preservation events.
+- **Semantic Equivalence Evaluation**: Refactored the benchmark evaluation to support normalized alternates and graph nodes.
 
 ### Changed
 - **License**: Changed project license to Apache 2.0, effective from version 0.1.0 onward.

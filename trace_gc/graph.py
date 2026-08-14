@@ -37,6 +37,7 @@ class StateGraph:
         self.protected: Set[str] = set()
         self.prune_reasons: Dict[str, str] = {}
         self.protected_reasons: Dict[str, str] = {}
+        self.pruning_rules: Dict[str, str] = {}
         self.receipts: Dict[str, dict] = {}
 
     # ---------------------------------------------------------------------
@@ -123,12 +124,30 @@ class StateGraph:
         event = self.nodes.get(node_id)
         # Copy timestamp from original event so collect_receipts() sorts correctly.
         ts = event.get("timestamp", 0) if event is not None else 0
+        reason = self.prune_reasons.get(node_id, "superseded or obsolete")
+        rule = self.pruning_rules.get(node_id, "general_override")
+
+        sem_rep = None
+        if event and "status" in event:
+            sem_rep = {
+                "type": event.get("type"),
+                "key": event.get("key"),
+                "value": event.get("value"),
+                "status": event.get("status")
+            }
+
         receipt = {
             "id": node_id,
             "type": "receipt",
             "target_id": node_id,
             "status": "pruned",
             "timestamp": ts,
+            "prune_reason": reason,
+            "pruning_rule": rule,
+            "source_id": node_id,
+            "source_text": event.get("source_text", "") if event else "",
+            "semantic_rep": sem_rep,
+            "can_recover": True
         }
         self.receipts[node_id] = receipt
 

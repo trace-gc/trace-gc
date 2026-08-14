@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trace-gc"
-version = "0.3.0"
+version = "0.4.0"
 description = "Deterministic, receipt-preserving context compaction library for LLM agents"
 readme = "README.md"
 requires-python = ">=3.9"

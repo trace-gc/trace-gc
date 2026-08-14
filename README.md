@@ -199,12 +199,13 @@ print(res["metrics"]) # {input_tokens, output_tokens, tokens_before, tokens_afte
 
 ## Pruning Stages
 
-TraceGC executes four deterministic stages to prune context:
+TraceGC executes five deterministic stages to prune context:
 
 1. **Dead-Branch Sweeper (DFS)**: Recursively traverses `sequence` edges starting from explicit `abandon` events to prune unsuccessful or aborted attempts. For example, if a sub-branch of tool calls and decisions is created but later abandoned, the sweeper marks the entire sub-branch as pruned.
 2. **Override Engine (`supersedes` edges)**: Finds superseded state variables (like `set_var` events) and retains only the most recent update per key among surviving nodes. For example, if a state variable is set multiple times, intermediate values are pruned in favor of the latest value.
 3. **Deduplication Engine**: Identifies duplicate tool call results (identical tool name, inputs, and outputs/results) and prunes redundant later identical executions, leaving a receipt pointing to the earliest surviving call.
 4. **Topological Sampler (Cycle Collapse)**: A defensive/structural optimization stage. It identifies cycles and strongly connected components (SCCs) via Tarjan's algorithm and collapses them into single deterministic receipt nodes (e.g., collapsing repeating execution loops to leave a single receipt stub). Since the standard `add_event()` event-stream API enforces sequential dependency parent checks, cycles can never form in normal client usage. This stage exists as defensive infrastructure to safely handle graphs constructed by other means (e.g. direct `StateGraph` population from out-of-order logs or non-chronological sources).
+5. **Semantic Pruning Engine**: Processes semantic duplicates, superseded technology decisions, and resolved errors while preserving provenance. It also prunes obsolete file reads (obsolete once edited) and redundant successful verification command executions.
 
 ---
 
@@ -291,7 +292,7 @@ The two approaches are complementary rather than competing: Headroom shrinks new
 
 TraceGC does not compete with hosted retrieval systems or general-purpose cognitive architectures. Its niche is defined by:
 1.  **Lightweight & Dependency-Free**: It is an offline, installable Python library with zero external package dependencies.
-2.  **Structured Event-Only**: It does not parse natural language or make semantic assumptions; it operates deterministically on structured schemas (`set_var`, `tool_call`, etc.).
+2.  **Deterministic Core & Semantic Cache**: It operates on structured schemas (`set_var`, `tool_call`, etc.), and optionally extracts and normalizes unstructured natural language logs into validated semantic events via a cached, incremental semantic pipeline.
 3.  **Receipt-Based Guarantee**: Unlike lossy summarization or truncation, pruned elements are replaced with inline receipt stubs that guarantee the original metadata remains fully recoverable on-demand.
 
 ## Benchmark Results
