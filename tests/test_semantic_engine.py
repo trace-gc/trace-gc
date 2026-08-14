@@ -18,7 +18,7 @@ def test_decision_lifecycle_status_transitions_generic_key():
 
     statuses = update_decision_lifecycle_status(graph, tracked_decision_keys={"auth_provider"})
     assert statuses["ap1"] == "PROPOSED"
-    assert ap1["status"] == "PROPOSED"
+    assert graph.decision_status["ap1"] == "PROPOSED"
 
     # Step 2: ACTIVE - tool_call referencing auth_provider="oauth"
     tc1 = {"id": "tc1", "type": "tool_call", "timestamp": 150, "tool_name": "auth", "arguments": {"auth_provider": "oauth"}}
@@ -26,7 +26,7 @@ def test_decision_lifecycle_status_transitions_generic_key():
 
     statuses = update_decision_lifecycle_status(graph, tracked_decision_keys={"auth_provider"})
     assert statuses["ap1"] == "ACTIVE"
-    assert ap1["status"] == "ACTIVE"
+    assert graph.decision_status["ap1"] == "ACTIVE"
 
     # Step 3: CONFIRMED - tool_result confirming oauth connection
     tr1 = {"id": "tr1", "type": "tool_result", "timestamp": 160, "call_id": "tc1", "result": "oauth connected"}
@@ -34,7 +34,7 @@ def test_decision_lifecycle_status_transitions_generic_key():
 
     statuses = update_decision_lifecycle_status(graph, tracked_decision_keys={"auth_provider"})
     assert statuses["ap1"] == "CONFIRMED"
-    assert ap1["status"] == "CONFIRMED"
+    assert graph.decision_status["ap1"] == "CONFIRMED"
 
     # Verify analysis.py active decisions filter returns ap1
     active = get_active_decisions(graph, tracked_decision_keys={"auth_provider"})
@@ -47,10 +47,10 @@ def test_decision_lifecycle_status_transitions_generic_key():
     statuses = update_decision_lifecycle_status(graph, tracked_decision_keys={"auth_provider"})
     # ap1 is now SUPERSEDED
     assert statuses["ap1"] == "SUPERSEDED"
-    assert ap1["status"] == "SUPERSEDED"
+    assert graph.decision_status["ap1"] == "SUPERSEDED"
     # ap2 is now PROPOSED (newest)
     assert statuses["ap2"] == "PROPOSED"
-    assert ap2["status"] == "PROPOSED"
+    assert graph.decision_status["ap2"] == "PROPOSED"
 
 
 def test_decision_lifecycle_untracked_key_default():

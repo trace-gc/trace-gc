@@ -32,7 +32,7 @@ def test_active_confirmation_policy():
     ]
     res_no = compact_events(events_no_evidence)
     # The status in graph should be demoted to PROPOSED
-    assert res_no["compact_events"][0]["status"] == "PROPOSED"
+    assert res_no["graph"].decision_status["e1"] == "PROPOSED"
 
     # Case B: With execution evidence -> ACTIVE preserved
     events_with_evidence = [
@@ -40,7 +40,7 @@ def test_active_confirmation_policy():
         {"id": "tc1", "type": "command_run", "timestamp": 110, "parent_id": "e1", "command": "pg_ctl status", "exit_code": 0},
     ]
     res_with = compact_events(events_with_evidence)
-    assert res_with["compact_events"][0]["status"] == "ACTIVE"
+    assert res_with["graph"].decision_status["e1"] == "ACTIVE"
 
 
 def test_confirmed_status_parsing():

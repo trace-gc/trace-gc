@@ -23,7 +23,8 @@ def get_receipt(graph: StateGraph, node_id: str) -> dict:
     """Return the original event dictionary for a pruned node, with ``pruned=True`` added.
 
     Returns a *copy* of the original event dict — the copy has ``pruned=True``
-    appended.  The original dict in ``graph.nodes`` is never mutated.
+    appended and any derived ``decision_status`` updated. The original dict in
+    ``graph.nodes`` is never mutated.
 
     Raises ``KeyError`` if *node_id* is not in ``graph.nodes``.
     """
@@ -31,6 +32,8 @@ def get_receipt(graph: StateGraph, node_id: str) -> dict:
         raise KeyError(f"Unknown node id: {node_id}")
     original = graph.nodes[node_id]
     result = dict(original)
+    if node_id in graph.decision_status:
+        result["status"] = graph.decision_status[node_id]
     if node_id in graph.pruned:
         result["pruned"] = True
     return result

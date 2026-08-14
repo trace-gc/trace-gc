@@ -53,6 +53,7 @@ def update_decision_lifecycle_status(
                 key_to_set_vars.setdefault(key, []).append(event)
                 # Rule 1: Default status is PROPOSED
                 statuses[node_id] = "PROPOSED"
+                graph.decision_status[node_id] = "PROPOSED"
 
     # Process status transitions per tracked key
     for key, events in key_to_set_vars.items():
@@ -65,7 +66,7 @@ def update_decision_lifecycle_status(
         for older in events[:-1]:
             older_id = older["id"]
             statuses[older_id] = "SUPERSEDED"
-            older["status"] = "SUPERSEDED"
+            graph.decision_status[older_id] = "SUPERSEDED"
 
         # Check for ACTIVE / CONFIRMED confirmation by downstream tool_call or tool_result
         for node_id, event in graph.nodes.items():
@@ -85,14 +86,14 @@ def update_decision_lifecycle_status(
                 if is_referenced:
                     if event.get("type") == "tool_result":
                         statuses[newest_id] = "CONFIRMED"
-                        newest["status"] = "CONFIRMED"
+                        graph.decision_status[newest_id] = "CONFIRMED"
                     elif statuses.get(newest_id) != "CONFIRMED":
                         statuses[newest_id] = "ACTIVE"
-                        newest["status"] = "ACTIVE"
+                        graph.decision_status[newest_id] = "ACTIVE"
 
         if newest_id not in statuses or statuses[newest_id] == "PROPOSED":
             statuses[newest_id] = "PROPOSED"
-            newest["status"] = "PROPOSED"
+            graph.decision_status[newest_id] = "PROPOSED"
 
     return statuses
 
@@ -157,18 +158,21 @@ def apply_semantic_pruning(
     for node_id, event in graph.nodes.items():
         if node_id in graph.pruned:
             continue
+        status = graph.decision_status.get(node_id, event.get("status"))
         if (
             event.get("type") == "set_var"
             and event.get("key") in tracked_keys
-            and event.get("status") == "ACTIVE"
+            and status == "ACTIVE"
         ):
             active_tech_choice_ids.append(node_id)
+            if node_id not in graph.decision_status:
+                graph.decision_status[node_id] = "ACTIVE"
         elif event.get("type") in {"command_run", "tool_call", "build_run", "verification"}:
             has_execution_evidence = True
 
     if not has_execution_evidence:
         for node_id in active_tech_choice_ids:
-            graph.nodes[node_id]["status"] = "PROPOSED"
+            graph.decision_status[node_id] = "PROPOSED"
 
     # -------------------------------------------------------------------------
     # Rule 2: Semantic Duplicate Pruning
@@ -180,7 +184,7 @@ def apply_semantic_pruning(
                 continue
             if event.get("type") == "set_var" and event.get("key") in tracked_keys:
                 val = event.get("value")
-                status = event.get("status", "PROPOSED")
+                status = graph.decision_status.get(node_id, event.get("status", "PROPOSED"))
                 tech_groups[(val, status)].append(event)
 
         for (val, status), group in tech_groups.items():
@@ -221,11 +225,12 @@ def apply_semantic_pruning(
     if prune_superseded:
         active_choices = []
         for node_id, event in graph.nodes.items():
+            status = graph.decision_status.get(node_id, event.get("status"))
             # Check active status
             if (
                 event.get("type") == "set_var"
                 and event.get("key") in tracked_keys
-                and event.get("status") in {"ACTIVE", "CONFIRMED", None}
+                and status in {"ACTIVE", "CONFIRMED", None}
             ):
                 # Only add if not pruned, or if it is the latest active choice
                 active_choices.append(event)
@@ -253,7 +258,7 @@ def apply_semantic_pruning(
                             graph.protected_reasons[node_id] = "protected decision"
                             continue
 
-                        event["status"] = "SUPERSEDED"
+                        graph.decision_status[node_id] = "SUPERSEDED"
                         graph.prune_reasons[node_id] = f"superseded by active {event.get('key')} {latest_val} (event {latest_id})"
                         if node_id not in graph.pruned:
                             graph.add_edge(latest_id, node_id, "supersedes")

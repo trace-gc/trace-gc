@@ -39,6 +39,7 @@ class StateGraph:
         self.protected_reasons: Dict[str, str] = {}
         self.pruning_rules: Dict[str, str] = {}
         self.receipts: Dict[str, dict] = {}
+        self.decision_status: Dict[str, str] = {}
 
     # ---------------------------------------------------------------------
     # Node / edge mutation helpers
@@ -128,12 +129,13 @@ class StateGraph:
         rule = self.pruning_rules.get(node_id, "general_override")
 
         sem_rep = None
-        if event and "status" in event:
+        status = self.decision_status.get(node_id, event.get("status")) if event else None
+        if event and status is not None:
             sem_rep = {
                 "type": event.get("type"),
                 "key": event.get("key"),
                 "value": event.get("value"),
-                "status": event.get("status")
+                "status": status
             }
 
         receipt = {

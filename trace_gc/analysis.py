@@ -62,6 +62,7 @@ def analyze_retained_events(
 
     for node_id, event in graph.nodes.items():
         ev_type = event.get("type", "unknown")
+        node_status = graph.decision_status.get(node_id, event.get("status"))
 
         # Derive semantic meaning
         if ev_type == "set_var":
@@ -97,7 +98,7 @@ def analyze_retained_events(
                 reason_retained = "protected by critical retention policy"
             elif dependents:
                 reason_retained = f"referenced by active dependency nodes: {dependents}"
-            elif ev_type == "set_var" and event.get("key") in tracked_keys and event.get("status") in {"ACTIVE", "CONFIRMED"}:
+            elif ev_type == "set_var" and event.get("key") in tracked_keys and node_status in {"ACTIVE", "CONFIRMED"}:
                 reason_retained = f"current active {event.get('key')} state decision"
             elif ev_type in {"command_run", "test_run"} and event.get("exit_code") == 0:
                 reason_retained = "successful execution evidence of current state"
@@ -133,7 +134,7 @@ def analyze_retained_events(
         analysis.append({
             "event_id": node_id,
             "semantic_meaning": meaning,
-            "current_state": event.get("status", "ACTIVE" if retained else "PRUNED"),
+            "current_state": node_status or ("ACTIVE" if retained else "PRUNED"),
             "dependencies": dependents,
             "retained": retained,
             "reason_retained": reason_retained,

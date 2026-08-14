@@ -99,6 +99,8 @@ class CompactionResult:
             raise KeyError(f"Unknown node id: {node_id}")
         original = self._graph.nodes[node_id]
         result = dict(original)
+        if node_id in self._graph.decision_status:
+            result["status"] = self._graph.decision_status[node_id]
         if node_id in self._graph.pruned:
             result["pruned"] = True
         return result
