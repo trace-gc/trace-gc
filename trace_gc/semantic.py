@@ -12,17 +12,35 @@ import hashlib
 from typing import Any, Dict, List, Optional
 
 
+DEFAULT_TECH_CATEGORY_MAP: dict[str, list[str]] = {
+    "database": ["postgresql", "postgres", "mysql", "sqlite", "mongodb", "mongo", "cassandra", "dynamodb"],
+    "cache_backend": ["redis", "memcached"],
+    "message_queue": ["kafka", "rabbitmq", "sqs"],
+}
+
+
+def build_tech_pattern(cat_map: dict[str, list[str]]) -> re.Pattern:
+    """Build a regex pattern matching all terms in the given technology-category mapping."""
+    all_terms = []
+    for terms in cat_map.values():
+        all_terms.extend(terms)
+    all_terms.sort(key=len, reverse=True)
+    pattern_str = r"(?i)\b(" + "|".join(re.escape(t) for t in all_terms) + r")\b"
+    return re.compile(pattern_str)
+
+
 class PatternRegistry:
     """Registry to store regex patterns and extraction functions."""
 
     def __init__(self) -> None:
         self.rules: List[Dict[str, Any]] = []
 
-    def register(self, name: str, pattern: str, priority: int, extract_fn: Any) -> None:
+    def register(self, name: str, pattern: Any, priority: int, extract_fn: Any) -> None:
         """Register a new extraction rule."""
+        compiled = pattern if isinstance(pattern, re.Pattern) else re.compile(pattern)
         self.rules.append({
             "name": name,
-            "pattern": re.compile(pattern),
+            "pattern": compiled,
             "priority": priority,
             "extract_fn": extract_fn
         })
@@ -146,6 +164,15 @@ registry.register(
 
 # -- 5. Error/Log Extraction Rule --
 def extract_log_error(match: re.Match, text: str) -> dict:
+    lower_text = text.lower()
+    negation_phrases = {
+        "no error", "no errors", "without error", "without errors",
+        "error handling", "error-free", "error free", "successfully",
+        "0 error", "0 errors", "no exception", "no exceptions"
+    }
+    if any(phrase in lower_text for phrase in negation_phrases):
+        raise ValueError("Negated or success log line - fallback to text_chunk")
+
     level = match.group(1).upper()
     msg = match.group(2).strip()
     msg = re.sub(r"^[\s\]:\-]+", "", msg).strip()
@@ -157,14 +184,18 @@ def extract_log_error(match: re.Match, text: str) -> dict:
 
 registry.register(
     "log_error",
-    r"(?i)\b(error|warn|warning|fatal|exception)\b[:\s]*(.*)",
-    50,
+    r"(?i)^\s*(?:\[?\d{4}[-/.]\d{2}[-/.]\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?)?\]?\s*)?(?:\[?(error|warn|warning|fatal|exception)\]?[:\s]+)(.*)",
+    35,
     extract_log_error
 )
 
 
 # -- 6. Semantic Technology Choice Rule --
-def extract_tech_choice(match: re.Match, text: str) -> dict:
+def extract_tech_choice(
+    match: re.Match,
+    text: str,
+    tech_category_map: dict[str, list[str]] | None = None
+) -> dict:
     # If the text is a structured key-value pair, fall back to extract_key_value behavior
     kv_match = re.match(r"^\s*([a-zA-Z_][a-zA-Z0-9_-]*)\s*[:=]\s*([^\n\r]+)$", text)
     if kv_match:
@@ -179,23 +210,32 @@ def extract_tech_choice(match: re.Match, text: str) -> dict:
     if words.intersection(ambiguous_keywords):
         raise ValueError("Negated or requirement statement - fallback to text_chunk")
 
-    # Determine target technology
-    to_match = re.search(r"\bto\s+(postgresql|postgres|redis|mysql|sqlite)\b", lower_text)
-    if to_match:
-        raw_tech = to_match.group(1)
-    else:
-        raw_tech = match.group(1)
+    cat_map = tech_category_map if tech_category_map is not None else DEFAULT_TECH_CATEGORY_MAP
+    term_to_key: dict[str, str] = {}
+    all_terms: list[str] = []
+    for k, terms in cat_map.items():
+        for t in terms:
+            t_low = t.lower()
+            term_to_key[t_low] = k
+            all_terms.append(t_low)
 
-    raw_tech = raw_tech.lower()
+    all_terms.sort(key=len, reverse=True)
+
+    to_pattern = r"\bto\s+(" + "|".join(re.escape(t) for t in all_terms) + r")\b"
+    to_match = re.search(to_pattern, lower_text)
+    if to_match:
+        raw_tech = to_match.group(1).lower()
+    else:
+        raw_tech = match.group(1).lower()
+
+    key = term_to_key.get(raw_tech, "database")
 
     # Normalize tech name
     tech = raw_tech
     if "postgres" in raw_tech:
         tech = "postgresql"
-    elif "redis" in raw_tech:
-        tech = "redis"
-    elif "sqlite" in raw_tech:
-        tech = "sqlite"
+    elif "mongo" in raw_tech:
+        tech = "mongodb"
 
     # Default to PROPOSED status
     status = "PROPOSED"
@@ -212,7 +252,7 @@ def extract_tech_choice(match: re.Match, text: str) -> dict:
 
     return {
         "type": "set_var",
-        "key": "database",
+        "key": key,
         "value": tech,
         "status": status,
         "confidence": 1.0,
@@ -224,14 +264,18 @@ def extract_tech_choice(match: re.Match, text: str) -> dict:
 
 registry.register(
     "tech_choice",
-    r"(?i)\b(postgresql|postgres|redis|mysql|sqlite)\b",
+    build_tech_pattern(DEFAULT_TECH_CATEGORY_MAP),
     30,
     extract_tech_choice
 )
 
 
-
-def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[dict]:
+def extract_semantic_events(
+    text: str,
+    prefix_id: str,
+    start_time: int,
+    tech_category_map: dict[str, list[str]] | None = None
+) -> list[dict]:
     """Parse unstructured text blocks and extract structured TraceGC events rules-based."""
     extracted_events: list[dict] = []
 
@@ -270,13 +314,11 @@ def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[
     for seg_text, rule, match in segments:
         if rule is not None and match is not None:
             # Block-level rule: attempt extraction; fall back to text_chunk on failure
-            # so no content is silently dropped (Phase 3 no-silent-loss invariant).
             try:
                 payload = rule["extract_fn"](match, seg_text)
                 payload["source_text"] = seg_text.strip()
                 extracted_events.append(payload)
             except Exception:
-                # Extraction failed — preserve text verbatim as a neutral event.
                 if seg_text.strip():
                     extracted_events.append({
                         "type": "text_chunk",
@@ -288,26 +330,28 @@ def extract_semantic_events(text: str, prefix_id: str, start_time: int) -> list[
             lines = seg_text.splitlines()
             for line in lines:
                 if not line.strip():
-                    # Blank lines carry no content — skip without emitting an event.
                     continue
                 matched = False
                 for r in line_rules:
-                    m = r["pattern"].search(line)
+                    if r["name"] == "tech_choice" and tech_category_map is not None:
+                        pattern = build_tech_pattern(tech_category_map)
+                    else:
+                        pattern = r["pattern"]
+
+                    m = pattern.search(line)
                     if m:
                         try:
-                            payload = r["extract_fn"](m, line)
+                            if r["name"] == "tech_choice":
+                                payload = r["extract_fn"](m, line, tech_category_map=tech_category_map)
+                            else:
+                                payload = r["extract_fn"](m, line)
                             payload["source_text"] = line.strip()
                             extracted_events.append(payload)
                             matched = True
                             break
                         except Exception:
-                            # Rule matched but extraction raised — treat as no-match
-                            # so the fallback below runs.
                             pass
                 if not matched:
-                    # No rule matched (or all extract_fns failed) — preserve the
-                    # line verbatim as a neutral text_chunk.  This is the
-                    # "fail-closed" path that prevents silent data loss.
                     extracted_events.append({
                         "type": "text_chunk",
                         "content": line.strip(),

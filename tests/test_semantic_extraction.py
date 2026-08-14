@@ -41,6 +41,57 @@ def test_extract_log_error():
     assert events[1]["message"] == "[WARN] High memory usage warning!"
 
 
+def test_log_error_false_positives():
+    """Regression test: log error should only match log-level prefix lines, not prose or negated lines."""
+    # Valid log error prefix line (with date-only prefix)
+    e1_date = extract_semantic_events("2026-08-14 ERROR: connection refused", prefix_id="err1_date", start_time=150)
+    assert len(e1_date) == 1
+    assert e1_date[0]["type"] == "error"
+    assert e1_date[0]["message"] == "[ERROR] connection refused"
+
+    # Prose line with "error" keyword should NOT extract as error
+    e2 = extract_semantic_events("error handling implemented successfully", prefix_id="err2", start_time=200)
+    assert len(e2) == 1
+    assert e2[0]["type"] == "text_chunk"
+
+    # Line with "no errors" should NOT extract as error
+    e3 = extract_semantic_events("no errors found during validation", prefix_id="err3", start_time=300)
+    assert len(e3) == 1
+    assert e3[0]["type"] == "text_chunk"
+
+
+def test_extract_tech_choice_generalized():
+    """Task A: Verify tech choice extraction recognizes generalized categories (mongodb, kafka) and custom maps."""
+    # MongoDB -> key="database", value="mongodb"
+    e_mongo = extract_semantic_events("We decided to switch to MongoDB for storage.", prefix_id="tc1", start_time=100)
+    assert len(e_mongo) == 1
+    assert e_mongo[0]["type"] == "set_var"
+    assert e_mongo[0]["key"] == "database"
+    assert e_mongo[0]["value"] == "mongodb"
+
+    # Kafka -> key="message_queue", value="kafka"
+    e_kafka = extract_semantic_events("Switched to Kafka for messaging.", prefix_id="tc2", start_time=200)
+    assert len(e_kafka) == 1
+    assert e_kafka[0]["type"] == "set_var"
+    assert e_kafka[0]["key"] == "message_queue"
+    assert e_kafka[0]["value"] == "kafka"
+
+    # Custom category map
+    custom_map = {
+        "search_engine": ["elasticsearch", "opensearch"]
+    }
+    e_custom = extract_semantic_events(
+        "Configured ElasticSearch for indexing.",
+        prefix_id="tc3",
+        start_time=300,
+        tech_category_map=custom_map
+    )
+    assert len(e_custom) == 1
+    assert e_custom[0]["type"] == "set_var"
+    assert e_custom[0]["key"] == "search_engine"
+    assert e_custom[0]["value"] == "elasticsearch"
+
+
 def test_extract_git_diff():
     text = (
         "Some prefix log content\n"
