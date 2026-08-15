@@ -1,43 +1,118 @@
-<p align="center">
-  <img src="logo.png" width="300" alt="TraceGC Logo">
-</p>
+<div align="center">
+  <a href="https://trace-gc-web.vercel.app">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/tracegc-logo-horizontal-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="docs/assets/tracegc-logo-horizontal-light.svg">
+      <img alt="TraceGC" src="docs/assets/tracegc-logo-horizontal-light.png" width="460">
+    </picture>
+  </a>
+</div>
 
 <p align="center">
   <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/v/tracegc.svg" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/pyversions/tracegc.svg" alt="Python Versions"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://github.com/athishio/tracegc/actions"><img src="https://img.shields.io/github/actions/workflow/status/athishio/tracegc/tests.yml?branch=main" alt="Build Status"></a>
-  <a href="https://tracegc-web.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
-  <a href="https://colab.research.google.com/github/athishio/tracegc/blob/main/demo/colab_demo.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+  <a href="https://trace-gc-web.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
+  <a href="https://colab.research.google.com/github/tracegc/tracegc/blob/main/demo/colab_demo.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 </p>
 
-TraceGC is an end-to-end open source platform and library for AI agent context management. It enables developers building stateful agent workflows to safely reduce LLM token consumption and avoid stale-context confusion by structurally pruning obsolete execution paths and redundant actions. Operating entirely locally and deterministically, TraceGC ensures that critical agent history remains compact, correct, and fully recoverable without the added latency, variability, or cost of LLM-based summarization routines.
+<p align="center">
+  <a href="https://trace-gc-web.vercel.app">Playground</a> •
+  <a href="SPEC.md">Specification</a> •
+  <a href="WRITEUP.md">Writeup</a> •
+  <a href="tracegc/benchmark/benchmark_report.md">Benchmarks</a> •
+  <a href="https://github.com/tracegc/tracegc/issues">Issues</a>
+</p>
+
+TraceGC is an open-source library and platform for deterministic context management in AI agent systems. It enables developers building stateful agent workflows to safely reduce LLM token consumption and avoid stale-context confusion by structurally pruning obsolete execution paths and redundant actions. Operating entirely locally and deterministically, TraceGC ensures that critical agent history remains compact, correct, and fully recoverable without the added latency, variability, or cost of LLM-based summarization routines.
 
 TraceGC was originally created as a deterministic alternative to AI-based context summarization for agent workflows. It was designed to bridge the gap between lossy conversation truncation and expensive model-driven context rewrites, providing absolute safety guarantees and local sub-millisecond execution.
 
+<p>
+  <a href="https://trace-gc-web.vercel.app"><strong>Learn more about TraceGC →</strong></a>
+</p>
+
 ## Install
+
+Install the latest stable release from PyPI:
 
 ```bash
 pip install tracegc
 ```
 
-### Try it
+To upgrade an existing installation:
 
-```python
->>> from tracegc import TraceGC
->>> client = TraceGC()
->>> client.add_event({"id": "e1", "type": "set_var", "timestamp": 1000, "key": "x", "value": 10})
->>> client.add_event({"id": "e2", "type": "set_var", "timestamp": 1010, "key": "x", "value": 20})
->>> res = client.compact()
->>> print(res["prompt"])
-[RECEIPT e1]
-x = 20
+```bash
+pip install --upgrade tracegc
 ```
 
-## Contribution guidelines
+## Quick Start
 
-**Contributions to TraceGC are welcome! Please read our [Contribution Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests or opening issues.**
+The recommended interface for managing agent context is the `TraceGC` client. It allows you to append events step-by-step as they occur and run compaction on-demand:
 
-## Build / Benchmark status
+```python
+from tracegc import TraceGC
+
+# 1. Initialize the client
+client = TraceGC()
+
+# 2. Append events incrementally as they occur
+client.add_event({
+    "id": "e001", 
+    "type": "decision", 
+    "timestamp": 1000, 
+    "parent_id": None, 
+    "content": "Start configuration"
+})
+client.add_event({
+    "id": "e002", 
+    "type": "set_var", 
+    "timestamp": 1010, 
+    "parent_id": "e001", 
+    "key": "x", 
+    "value": 10
+})
+client.add_event({
+    "id": "e003", 
+    "type": "set_var", 
+    "timestamp": 1020, 
+    "parent_id": "e002", 
+    "key": "x", 
+    "value": 20  # Supersedes x=10
+})
+
+# 3. Compact the context history on-demand
+result = client.compact()
+
+# Access the compacted prompt prefix
+print(result["prompt"])
+# Output: [RECEIPT e002]\nx = 20
+```
+
+## Why TraceGC?
+
+*   **Deterministic Pruning** — Operates on exact directed multigraph representations with absolute safety guarantees and no stochastic LLM calls.
+*   **Recoverable Receipts** — Pruned steps leave behind lightweight inline stubs (`[RECEIPT node_id]`) to maintain history context while keeping raw content fully restorable on-demand.
+*   **Local Performance** — Executes locally in sub-milliseconds with zero API costs, avoiding network roundtrips and model latencies.
+*   **Framework Agnostic & Composable** — Integrates seamlessly as a zero-dependency pre-filter upstream of any agent loop, model provider, or native compaction tool.
+
+## How It Works
+
+TraceGC compiles your agent's execution logs through five pipeline stages:
+
+```
+Agent Trace ──► State Graph ──► Deterministic Pruning ──► Receipt Generation ──► Compact Context
+```
+
+1.  **Dead-Branch Sweeper**: Traces and removes aborted tool executions and failed branches starting from `abandon` markers.
+2.  **Override Engine**: Identifies variable updates (`set_var`) and retains only the latest active state per key.
+3.  **Deduplication Engine**: Automatically deduplicates identical consecutive tool calls (`tool_call`/`tool_result`).
+4.  **Topological Sampler**: Detects structural dependency cycles and collapses them to resolve strongly connected loops.
+5.  **Semantic Pruning**: Resolves semantic equivalents, error paths, obsolete file reads, and redundant successful verifications.
+
+*For formal definitions, refer to the [TraceGC Specification](SPEC.md).*
+
+## Benchmarks
 
 TraceGC is continuously validated against synthetic and natural agent execution logs. The table below summarizes the compaction and probe accuracy results compared to truncation and AI-driven summarization across short, medium, and long traces:
 
@@ -58,19 +133,24 @@ TraceGC is continuously validated against synthetic and natural agent execution 
 | | ai_summarize_recursive | 219.2 | 100% | 0.0% | 100% | 0.0% | No |
 | | **tracegc_pipeline** | **1028.3** | **100%** | **100%** | **100%** | **100%** | **Yes** |
 
-For a complete breakdown of latencies, token-count truncation, and per-tier metrics, see the [Comparative Benchmark Report](https://github.com/athishio/tracegc/blob/main/tracegc/benchmark/benchmark_report.md).
+For a complete breakdown of latencies, token-count truncation, and per-tier metrics, see the [Comparative Benchmark Report](tracegc/benchmark/benchmark_report.md).
 
-## Resources
+## Explore TraceGC
 
-*   [Google Colab Demo](https://colab.research.google.com/github/athishio/tracegc/blob/main/demo/colab_demo.ipynb): Try TraceGC in an interactive Python notebook.
-*   [Web App Playground](https://tracegc-web.vercel.app): Visualize context compaction in real time.
-*   [Comparative Benchmark Report](https://github.com/athishio/tracegc/blob/main/tracegc/benchmark/benchmark_report.md): Deep-dive compaction stats.
-*   [Project Writeup](https://github.com/athishio/tracegc/blob/main/WRITEUP.md): Architectural findings and live LLM answer-quality stress tests.
-*   [Specifications](https://github.com/athishio/tracegc/blob/main/SPEC.md): Formal schema and design definitions.
+Try TraceGC interactively in the web playground or run the deterministic benchmarks locally:
+
+*   **[Open Web Playground →](https://trace-gc-web.vercel.app)**
+*   **[Run Benchmarks Locally →](tracegc/benchmark/benchmark_report.md#reproducing-the-benchmark)**
+
+## Contributing
+
+Contributions are welcome. Please open an issue or submit a pull request on the [TraceGC Issue Tracker](https://github.com/tracegc/tracegc/issues).
 
 ## License
 
-[Apache License 2.0](LICENSE)
+TraceGC is available under the [Apache License 2.0](LICENSE).
+
+---
 
 ## Technical Deep Dive
 
@@ -87,15 +167,6 @@ By modeling the agent's interaction history (execution traces) as a directed mul
 ### Architecture
 
 TraceGC processes execution traces through a linear compilation pipeline, transforming a raw timeline of structured events into a clean, compacted prompt prefix.
-
-#### Compaction Pipeline Flow
-
-```text
-┌───────┐      ┌───────┐      ┌─────────────────────────┐      ┌──────────────┐      ┌───────────────────┐
-│ Trace │ ───► │ Graph │ ───► │    Override Engine +    │ ───► │ Topo Sampler │ ───► │ Compacted Prompt  │
-└───────┘      └───────┘      │   Dead-Branch Sweeper   │      └──────────────┘      │  + Receipt Store  │
-                               └─────────────────────────┘                            └───────────────────┘
-```
 
 #### Entry Points
 
@@ -174,18 +245,6 @@ res = call_openai_with_compaction(
 print(res["response_text"])
 print(res["metrics"]) # {input_tokens, output_tokens, tokens_before, tokens_after}
 ```
-
----
-
-### Pruning Stages
-
-TraceGC executes five deterministic stages to prune context:
-
-1.  **Dead-Branch Sweeper (DFS)**: Recursively traverses `sequence` edges starting from explicit `abandon` events to prune unsuccessful or aborted attempts. For example, if a sub-branch of tool calls and decisions is created but later abandoned, the sweeper marks the entire sub-branch as pruned.
-2.  **Override Engine (`supersedes` edges)**: Finds superseded state variables (like `set_var` events) and retains only the most recent update per key among surviving nodes. For example, if a state variable is set multiple times, intermediate values are pruned in favor of the latest value.
-3.  **Deduplication Engine**: Identifies duplicate tool call results (identical tool name, inputs, and outputs/results) and prunes redundant later identical executions, leaving a receipt pointing to the earliest surviving call.
-4.  **Topological Sampler (Cycle Collapse)**: A defensive/structural optimization stage. It identifies cycles and strongly connected components (SCCs) via Tarjan's algorithm and collapses them into single deterministic receipt nodes (e.g., collapsing repeating execution loops to leave a single receipt stub). Since the standard `add_event()` event-stream API enforces sequential dependency parent checks, cycles can never form in normal client usage. This stage exists as defensive infrastructure to safely handle graphs constructed by other means (e.g. direct `StateGraph` population from out-of-order logs or non-chronological sources).
-5.  **Semantic Pruning Engine**: Processes semantic duplicates, superseded technology decisions, and resolved errors while preserving provenance. It also prunes obsolete file reads (obsolete once edited) and redundant successful verification command executions.
 
 ---
 
