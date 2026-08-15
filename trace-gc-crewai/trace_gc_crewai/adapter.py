@@ -26,12 +26,12 @@ def _normalize_crewai_step(step: Any) -> dict:
         )
         return {"role": "assistant", "content": combined_content}
 
-    # CrewAI AgentAction / ToolResult / AgentFinish / TaskOutput object inspection
-    if hasattr(step, "thought") or hasattr(step, "tool") or hasattr(step, "tool_input"):
+    # CrewAI AgentAction (has .tool / .tool_input / .log / .thought)
+    if hasattr(step, "tool") or hasattr(step, "tool_input"):
         tool_name = getattr(step, "tool", "unknown_tool")
         tool_input = getattr(step, "tool_input", {})
-        thought = getattr(step, "thought", "")
-        text = getattr(step, "text", getattr(step, "result", ""))
+        thought = getattr(step, "thought", getattr(step, "log", ""))
+        text = getattr(step, "text", getattr(step, "result", getattr(step, "output", "")))
         content = f"Thought: {thought}\nAction: {tool_name}\nInput: {tool_input}\nOutput: {text}".strip()
         return {
             "type": "tool_call",
@@ -40,9 +40,18 @@ def _normalize_crewai_step(step: Any) -> dict:
             "content": content,
         }
 
-    if hasattr(step, "output") or hasattr(step, "raw"):
-        raw_output = getattr(step, "raw", getattr(step, "output", str(step)))
-        return {"role": "assistant", "content": str(raw_output)}
+    # CrewAI AgentFinish (has .return_values / .log)
+    if hasattr(step, "return_values"):
+        rv = getattr(step, "return_values", {})
+        output_str = rv.get("output", str(rv)) if isinstance(rv, dict) else str(rv)
+        log_str = getattr(step, "log", "")
+        content = f"{output_str}\n{log_str}".strip()
+        return {"role": "assistant", "content": content}
+
+    # CrewAI TaskOutput (has .result / .raw / .raw_output)
+    if hasattr(step, "result") or hasattr(step, "raw") or hasattr(step, "raw_output"):
+        result_text = getattr(step, "result", getattr(step, "raw", getattr(step, "raw_output", str(step))))
+        return {"role": "assistant", "content": str(result_text)}
 
     return {"role": "user", "content": str(step)}
 
