@@ -1,10 +1,10 @@
 <div align="center">
-  <a href="https://trace-gc-web.vercel.app">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/tracegc-logo-horizontal-dark.svg">
-      <source media="(prefers-color-scheme: light)" srcset="docs/assets/tracegc-logo-horizontal-light.svg">
-      <img alt="TraceGC" src="docs/assets/tracegc-logo-horizontal-light.png" width="460">
-    </picture>
+  <a href="https://tracegc.vercel.app">
+    <img
+      src="docs/assets/tracegc-logo-horizontal-transparent.png"
+      alt="TraceGC"
+      width="500"
+    />
   </a>
 </div>
 
@@ -12,12 +12,12 @@
   <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/v/tracegc.svg" alt="PyPI Version"></a>
   <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/pyversions/tracegc.svg" alt="Python Versions"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://trace-gc-web.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
+  <a href="https://tracegc.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
   <a href="https://colab.research.google.com/github/tracegc/tracegc/blob/main/demo/colab_demo.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 </p>
 
 <p align="center">
-  <a href="https://trace-gc-web.vercel.app">Playground</a> •
+  <a href="https://tracegc.vercel.app">Playground</a> •
   <a href="SPEC.md">Specification</a> •
   <a href="WRITEUP.md">Writeup</a> •
   <a href="tracegc/benchmark/benchmark_report.md">Benchmarks</a> •
@@ -29,7 +29,7 @@ TraceGC is an open-source library and platform for deterministic context managem
 TraceGC was originally created as a deterministic alternative to AI-based context summarization for agent workflows. It was designed to bridge the gap between lossy conversation truncation and expensive model-driven context rewrites, providing absolute safety guarantees and local sub-millisecond execution.
 
 <p>
-  <a href="https://trace-gc-web.vercel.app"><strong>Learn more about TraceGC →</strong></a>
+  <a href="https://tracegc.vercel.app"><strong>Learn more about TraceGC →</strong></a>
 </p>
 
 ## Install
@@ -139,7 +139,7 @@ For a complete breakdown of latencies, token-count truncation, and per-tier metr
 
 Try TraceGC interactively in the web playground or run the deterministic benchmarks locally:
 
-*   **[Open Web Playground →](https://trace-gc-web.vercel.app)**
+*   **[Open Web Playground →](https://tracegc.vercel.app)**
 *   **[Run Benchmarks Locally →](tracegc/benchmark/benchmark_report.md#reproducing-the-benchmark)**
 
 ## Contributing
