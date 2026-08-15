@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **CrewAI Adapter (`trace-gc-crewai`)**: Added a dedicated CrewAI adapter package providing `TraceGCCrewCallback`, `create_step_callback`, `TraceGCCrewAdapter`, and `compact_messages` for CrewAI step and task context compaction.
+
 ## [0.4.0] - 2026-08-13
 
 ### Added
