@@ -80,25 +80,29 @@ def test_crewai_step_objects_normalization():
     from langchain_core.agents import AgentAction, AgentFinish
     from crewai.tasks.task_output import TaskOutput
 
+    # 1. AgentAction (observed attributes: tool, tool_input, log)
     action = AgentAction(
-        tool="db_selector",
+        tool="select_db",
         tool_input={"key": "database", "value": "sqlite"},
-        log="Thought: selecting db\nAction: db_selector",
+        log="Thought: select sqlite\nAction: select_db",
     )
     norm_action = _normalize_crewai_step(action)
     assert norm_action["type"] == "tool_call"
-    assert norm_action["tool_name"] == "db_selector"
+    assert norm_action["tool_name"] == "select_db"
     assert norm_action["arguments"] == {"key": "database", "value": "sqlite"}
+    assert "select_db" in norm_action["content"]
 
-    finish = AgentFinish(return_values={"output": "Selected sqlite"}, log="Finished")
+    # 2. AgentFinish (observed attributes: return_values, log)
+    finish = AgentFinish(return_values={"output": "Database selected: sqlite"}, log="Finished execution")
     norm_finish = _normalize_crewai_step(finish)
     assert norm_finish["role"] == "assistant"
-    assert "Selected sqlite" in norm_finish["content"]
+    assert "Database selected: sqlite" in norm_finish["content"]
 
-    task_out = TaskOutput(description="Select DB", result="sqlite selected", agent="Architect")
+    # 3. TaskOutput (observed attributes: description, summary, result)
+    task_out = TaskOutput(description="Recommend a database for the project.", result="Database selected: sqlite")
     norm_task = _normalize_crewai_step(task_out)
     assert norm_task["role"] == "assistant"
-    assert norm_task["content"] == "sqlite selected"
+    assert norm_task["content"] == "Database selected: sqlite"
 
 
 def test_real_crewai_agent_instantiation():
