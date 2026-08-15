@@ -66,7 +66,26 @@ def main():
     diff_parser = subparsers.add_parser("diff", help="Diff original and compacted prompt output")
     diff_parser.add_argument("trace_file", help="Path to trace file (JSON or JSONL)")
 
+    # benchmark subcommand
+    benchmark_parser = subparsers.add_parser("benchmark", help="Run comparative context compaction benchmark")
+    benchmark_parser.add_argument("trace_file", nargs="?", default=None, help="Path to trace file (JSON or JSONL)")
+    benchmark_parser.add_argument("--sample", action="store_true", help="Run benchmark against all 9 bundled sample fixtures")
+    benchmark_parser.add_argument("--output", choices=["table", "json"], default="table", help="Output format: table (default) or json")
+
     args = parser.parse_args()
+
+    if args.command == "benchmark":
+        if not args.trace_file and not args.sample:
+            print("Error: Either trace_file path or --sample must be specified.", file=sys.stderr)
+            sys.exit(1)
+        from trace_gc.benchmark.cli_runner import run_benchmark_cli, format_benchmark_output
+        try:
+            data = run_benchmark_cli(trace_path=args.trace_file, use_sample=args.sample, output_format=args.output)
+            print(format_benchmark_output(data, output_format=args.output))
+        except Exception as e:
+            print(f"Error running benchmark: {e}", file=sys.stderr)
+            sys.exit(1)
+        return
 
     # Load events
     try:

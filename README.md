@@ -348,6 +348,22 @@ simply discarding whatever falls outside its window — recall and
 decision accuracy collapse to 0% on medium and long traces. It compresses
 by destroying information, not by understanding it.
 
+### Reproducing the Benchmark
+
+You can reproduce the free, deterministic benchmark results locally against the exact 9 bundled trace fixtures using the CLI:
+
+```bash
+trace-gc benchmark --sample
+```
+
+To run the benchmark against your own custom trace file (in JSON or JSONL format):
+
+```bash
+trace-gc benchmark /path/to/trace.json
+```
+
+Add `--output json` to produce machine-readable JSON output instead of the default table.
+
 AI-summarization compresses more aggressively than TraceGC on longer
 traces and preserves recall reasonably well, but **decision accuracy is
 0% across every single trace length** — the rationale behind an agent's

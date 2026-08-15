@@ -31,5 +31,9 @@ test = [
     "hypothesis>=6.0.0"
 ]
 
-[tool.setuptools]
-packages = ["trace_gc"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trace_gc*"]
+
+[tool.setuptools.package-data]
+"trace_gc.benchmark" = ["fixtures/*.json"]
