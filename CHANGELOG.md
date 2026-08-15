@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **CrewAI Adapter (`trace-gc-crewai`)**: Added a dedicated CrewAI adapter package providing `TraceGCCrewCallback`, `create_step_callback`, `TraceGCCrewAdapter`, and `compact_messages` for CrewAI step and task context compaction.
 
+### Changed
+- **README positioning vs. provider-native compaction**: Added a "Provider-Native Compaction vs. TraceGC" section documenting how TraceGC relates to Anthropic's `compact` API, OpenAI's trained-in Codex pruning, and Google ADK's compaction — positioned as a deterministic pre-filter that can run upstream of these, not a replacement for them. Updated "TraceGC's Niche" and the top feature list to match.
+
 ## [0.4.0] - 2026-08-13
 
 ### Added

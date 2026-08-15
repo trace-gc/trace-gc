@@ -9,6 +9,7 @@ Deterministic, receipt-preserving context compaction library for AI agents with 
 * **Zero added latency from AI calls** using a fully local, deterministic compaction engine.
 * **Retention Policy Control** through optional metadata (`importance`, `tags`, `retain_until`) to protect critical events from being pruned.
 * **CLI Auditing & Inspection** (`trace-gc` command) to compact, dry-run, explain pruning decisions, diff prompts, and restore receipts.
+* **Composable with provider-native compaction** (Anthropic's `compact` API, OpenAI's trained-in Codex pruning, Google ADK) — run TraceGC as a deterministic pre-filter upstream instead of choosing one or the other. See [Provider-Native Compaction vs. TraceGC](#provider-native-compaction-vs-tracegc).
 
 ## Interactive Demos
 
@@ -274,11 +275,20 @@ TraceGC validates incoming events according to five structured types defined in 
 ## Prior Art / Related Work
 
 The problem of managing long-context window limits and cost in agentic systems is an active area of research and engineering. Related approaches include:
+*   **Provider-Native Compaction (Anthropic, OpenAI, Google)**: Compaction built directly into the model provider's API or agent framework — e.g. Anthropic's `compact` API (configurable thresholds, custom summarization prompts, available across Claude API/Bedrock/Vertex/Foundry), OpenAI's Codex-Max/Codex models trained to prune their own history as a native model objective, and Google ADK's compaction architecture. These require no separate library, but compact by having a model summarize or rewrite history — the same class of approach as "AI-Driven Summarization" below, just integrated at the provider layer instead of bolted on by the developer.
 *   **Content-Level Compression (Headroom)**: Compresses the content of individual messages or tool outputs as they arrive (routing JSON, logs, or text to specialized per-type compressors, including the trained ML-based compressor *Kompress*) while leaving the historical conversation structure untouched to maximize provider KV-cache hits.
 *   **Graph-based Memory Systems & Knowledge Graphs**: Tools (like Cognee) that structure agent experiences as entity-relation networks rather than linear logs.
 *   **OS-Inspired Memory Architectures**: Frameworks (such as MemGPT/Letta) that treat context management analogously to operating system paging, moving data between virtual memory and disk.
 *   **Hosted Memory & Vector Databases**: SaaS platforms and databases that offer retrieval-augmented generation (RAG) and search workflows over raw text memories.
 *   **AI-Driven Summarization**: Naive LLM calls that periodically summarize history logs into shorter paragraphs.
+
+### Provider-Native Compaction vs. TraceGC
+
+As of 2026, model providers increasingly ship compaction as a built-in feature rather than something developers bolt on themselves. This is a meaningfully different animal from TraceGC, not a competing implementation of the same idea:
+
+*   **Provider-native compaction is model-driven.** Whether it's an explicit summarization call (Anthropic's `compact` API) or a pruning behavior trained directly into the model (OpenAI's Codex-Max), the decision about what to keep is made by a model reading the history and rewriting or dropping parts of it. That is a more sophisticated version of the same "AI-Driven Summarization" category above, with the same fundamental tradeoff: it is not deterministic, output differs run to run, and (per TraceGC's own benchmark) this class of approach has historically scored well on recall but near-zero on preserving the *rationale behind a decision* — the exact failure mode now widely referred to in the industry as "context rot."
+*   **TraceGC is structure-driven.** It doesn't ask a model what to keep; it computes what is already provably dead — a state variable that's been overwritten, a tool call that's an exact duplicate, a branch that was explicitly abandoned — and removes only that, leaving a recoverable receipt behind. Nothing is ever summarized or paraphrased.
+*   **These are not mutually exclusive.** TraceGC is not positioned as a replacement for provider-native compaction — it's a deterministic pre-filter that can run *before* it. Pruning the provably-dead branches and superseded state out of a trace first means a provider's `compact` call (or a trained-in pruning pass) has less redundant, already-obsolete material to summarize, and fewer opportunities to accidentally summarize away something that mattered. Teams already using a provider's native compaction don't need to rip it out to adopt TraceGC — TraceGC can sit upstream of it in the pipeline.
 
 ### Headroom vs. TraceGC
 
@@ -290,10 +300,11 @@ The two approaches are complementary rather than competing: Headroom shrinks new
 
 ### TraceGC's Niche
 
-TraceGC does not compete with hosted retrieval systems or general-purpose cognitive architectures. Its niche is defined by:
+TraceGC does not compete with hosted retrieval systems, general-purpose cognitive architectures, or provider-native compaction. Its niche is defined by:
 1.  **Lightweight & Dependency-Free**: It is an offline, installable Python library with zero external package dependencies.
 2.  **Deterministic Core & Semantic Cache**: It operates on structured schemas (`set_var`, `tool_call`, etc.), and optionally extracts and normalizes unstructured natural language logs into validated semantic events via a cached, incremental semantic pipeline.
-3.  **Receipt-Based Guarantee**: Unlike lossy summarization or truncation, pruned elements are replaced with inline receipt stubs that guarantee the original metadata remains fully recoverable on-demand.
+3.  **Receipt-Based Guarantee**: Unlike lossy summarization or truncation — including model-driven compaction, whether called explicitly or trained into the model — pruned elements are replaced with inline receipt stubs that guarantee the original metadata remains fully recoverable on-demand.
+4.  **Composable Pre-Filter**: Because it's deterministic and framework-agnostic, TraceGC can run upstream of a provider's own compaction step rather than requiring a choice between the two.
 
 ## Benchmark Results
 
