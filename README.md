@@ -1,10 +1,15 @@
 <div align="center">
   <a href="https://tracegc.vercel.app">
-    <img
-      src="docs/assets/tracegc-logo-horizontal-transparent.png"
-      alt="TraceGC"
-      width="500"
-    />
+    <picture>
+      <source media="(prefers-color-scheme: dark)"
+              srcset="docs/assets/tracegc-logo-horizontal-dark.svg">
+      <source media="(prefers-color-scheme: light)"
+              srcset="docs/assets/tracegc-logo-horizontal-light.svg">
+      <img
+        src="docs/assets/tracegc-logo-horizontal-light.png"
+        alt="TraceGC"
+        width="500">
+    </picture>
   </a>
 </div>
 
