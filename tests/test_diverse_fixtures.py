@@ -11,9 +11,9 @@ from __future__ import annotations
 import os
 import json
 import pytest
-from trace_gc import TraceGC, compact_events
-from trace_gc.events import load_events_from_json
-from trace_gc.receipts import get_receipt
+from tracegc import TraceGC, compact_events
+from tracegc.events import load_events_from_json
+from tracegc.receipts import get_receipt
 
 FIXTURE_RESEARCH_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "research_agent_trace.json")
 FIXTURE_SUPPORT_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "support_agent_trace.json")

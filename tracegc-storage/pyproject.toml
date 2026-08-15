@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tracegc-storage"
+version = "0.1.0"
+description = "Storage adapters for tracegc"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "tracegc"
+]

@@ -13,7 +13,7 @@ TEST_EVENTS = [
 
 
 def run_cli(args):
-    cmd = [sys.executable, "-m", "trace_gc.cli"] + args
+    cmd = [sys.executable, "-m", "tracegc.cli"] + args
     res = subprocess.run(cmd, capture_output=True, text=True)
     return res
 

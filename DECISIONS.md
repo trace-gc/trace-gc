@@ -4,10 +4,10 @@ This document outlines the strict design contracts and invariants that govern **
 
 ## Invariants
 
-1.  **Core trace-gc remains zero-dependency.**
-    *   *Verification*: Checked by `tests/test_dependencies.py` which verifies that importing `trace_gc` does not pull in any external third-party packages.
+1.  **Core tracegc remains zero-dependency.**
+    *   *Verification*: Checked by `tests/test_dependencies.py` which verifies that importing `tracegc` does not pull in any external third-party packages.
 2.  **Storage and protocol adapters live in separate packages.**
-    *   *Verification*: Verified by repository project structure layout and presence of isolated packages (`trace-gc-storage`, `trace-gc-mcp`, `trace-gc-langgraph`).
+    *   *Verification*: Verified by repository project structure layout and presence of isolated packages (`tracegc-storage`, `tracegc-mcp`, `tracegc-langgraph`).
 3.  **MCP calls use explicit context_id handles.**
     *   *Verification*: Verified by API schema tests in `tests/test_mcp_protocol.py`.
 4.  **context_append is idempotent.**
@@ -24,7 +24,7 @@ This document outlines the strict design contracts and invariants that govern **
     *   *Verification*: Verified by differential properties tests running multiple random seeds in `tests/test_properties.py`.
 10. **Persisted event/result formats carry schema_version 1.**
     *   *Verification*: Verified by schema validation checks in `tests/test_schemas.py`.
-11. **trace_gc imports and runs in a bare virtualenv with zero extras.**
+11. **tracegc imports and runs in a bare virtualenv with zero extras.**
     *   *Verification*: Checked by bare imports verification in `tests/test_dependencies.py`.
 12. **Appends to one context are serialized.**
     *   *Verification*: Tested by concurrent append stress tests in `tests/test_concurrency.py`.
@@ -47,7 +47,7 @@ This document outlines the strict design contracts and invariants that govern **
 21. **MCP protocol metadata and TraceGC result_schema_version are independent versioning layers.**
     *   *Verification*: Documented and verified in architectural and threat model documents.
 22. **Semantic extraction must never silently drop content (no-silent-loss invariant).**
-    *   *Background*: A Phase 3 audit of `trace_gc/semantic.py` found that `extract_semantic_events()` was
+    *   *Background*: A Phase 3 audit of `tracegc/semantic.py` found that `extract_semantic_events()` was
         silently discarding lines that matched no Tier 2 rule and segments whose `extract_fn` raised an
         exception. Both paths produced no event and consumed the input text, causing invisible data loss.
     *   *Fix (2026-08-12)*: Both the block-level exception handler and the per-line no-match branch now

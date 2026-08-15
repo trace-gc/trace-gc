@@ -1,7 +1,7 @@
 import pytest
 import time
-from trace_gc.compactor import compact_events
-from trace_gc.events import validate_event
+from tracegc.compactor import compact_events
+from tracegc.events import validate_event
 
 def test_missing_required_fields():
     # Missing 'timestamp' and 'key'/'value' for set_var
@@ -94,7 +94,7 @@ def test_huge_trace_performance_and_linearity():
 
 def test_duplicate_event_id_raises():
     """BUG-1 regression: duplicate event IDs must raise ValueError, not silently overwrite."""
-    from trace_gc.graph import StateGraph
+    from tracegc.graph import StateGraph
     graph = StateGraph()
     graph.add_node({"id": "e1", "type": "decision", "timestamp": 100, "content": "first"})
     with pytest.raises(ValueError, match="Duplicate event id"):

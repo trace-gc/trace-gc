@@ -5,11 +5,11 @@ see the fixture: tests/fixtures/retention_policy_demo.json.
 """
 
 import pytest
-from trace_gc.graph import StateGraph
-from trace_gc.events import validate_event
-from trace_gc.override_engine import apply_overrides
-from trace_gc.dead_branch_sweeper import sweep_dead_branches
-from trace_gc.dedup_engine import deduplicate_tool_calls
+from tracegc.graph import StateGraph
+from tracegc.events import validate_event
+from tracegc.override_engine import apply_overrides
+from tracegc.dead_branch_sweeper import sweep_dead_branches
+from tracegc.dedup_engine import deduplicate_tool_calls
 
 
 def test_override_protection():

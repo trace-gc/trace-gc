@@ -1,7 +1,7 @@
 import pytest
-from trace_gc.graph import StateGraph
-from trace_gc.override_engine import apply_overrides
-from trace_gc.compactor import compact_events
+from tracegc.graph import StateGraph
+from tracegc.override_engine import apply_overrides
+from tracegc.compactor import compact_events
 
 
 def test_apply_overrides():

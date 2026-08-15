@@ -1,7 +1,7 @@
 import pytest
-from trace_gc import TraceGC
+from tracegc import TraceGC
 
-def test_trace_gc_incremental():
+def test_tracegc_incremental():
     client = TraceGC()
     
     # 16 events added incrementally
@@ -69,7 +69,7 @@ def test_trace_gc_incremental():
         assert rcpt.get("pruned") is True
 
 
-def test_trace_gc_nonexistent_parent_raises():
+def test_tracegc_nonexistent_parent_raises():
     client = TraceGC()
     client.add_event({"id": "e001", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Root"})
     
@@ -84,9 +84,9 @@ def test_trace_gc_nonexistent_parent_raises():
     assert "parent_id 'nonexistent_parent' not found in graph — events must be added in dependency order" in str(excinfo.value)
 
 
-def test_trace_gc_sqlite_store_persistence(tmp_path):
+def test_tracegc_sqlite_store_persistence(tmp_path):
     """Verify TraceGC client using SQLiteStore persists events and compactions across new client instances."""
-    from trace_gc_storage import SQLiteStore
+    from tracegc_storage import SQLiteStore
 
     db_file = str(tmp_path / "agent_persistence.db")
     ctx_id = "sess_sqlite_test"

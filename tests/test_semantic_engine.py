@@ -2,9 +2,9 @@
 """Tests for semantic decision-lifecycle status transitions (PROPOSED -> ACTIVE -> CONFIRMED -> SUPERSEDED)."""
 
 import pytest
-from trace_gc.graph import StateGraph
-from trace_gc.semantic_engine import update_decision_lifecycle_status
-from trace_gc.analysis import get_active_decisions
+from tracegc.graph import StateGraph
+from tracegc.semantic_engine import update_decision_lifecycle_status
+from tracegc.analysis import get_active_decisions
 
 
 def test_decision_lifecycle_status_transitions_generic_key():

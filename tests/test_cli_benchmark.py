@@ -1,12 +1,12 @@
 # tests/test_cli_benchmark.py
-"""Tests for the trace-gc benchmark CLI runner."""
+"""Tests for the tracegc benchmark CLI runner."""
 
 from __future__ import annotations
 
 import json
 import os
 import pytest
-from trace_gc.benchmark.cli_runner import (
+from tracegc.benchmark.cli_runner import (
     run_benchmark_cli,
     format_benchmark_output,
     BUNDLED_FIXTURE_NAMES,
@@ -28,7 +28,7 @@ def test_run_benchmark_cli_single_fixture():
     assert len(trace_item["methods"]) == 4
     
     method_names = [m["method"] for m in trace_item["methods"]]
-    assert method_names == ["full_history", "truncate_by_event_count", "truncate_by_token_count", "trace_gc_pipeline"]
+    assert method_names == ["full_history", "truncate_by_event_count", "truncate_by_token_count", "tracegc_pipeline"]
     
     for m in trace_item["methods"]:
         assert "tokens" in m
@@ -79,19 +79,19 @@ def test_benchmark_determinism():
 
 def test_cli_main_benchmark_sample(capsys, monkeypatch):
     """Test CLI main() invocation with 'benchmark --sample'."""
-    from trace_gc.cli import main
-    monkeypatch.setattr("sys.argv", ["trace-gc", "benchmark", "--sample"])
+    from tracegc.cli import main
+    monkeypatch.setattr("sys.argv", ["tracegc", "benchmark", "--sample"])
     main()
     captured = capsys.readouterr()
     assert "Benchmark Trace: coding_agent_short" in captured.out
-    assert "| trace_gc_pipeline" in captured.out
+    assert "| tracegc_pipeline" in captured.out
 
 
 def test_cli_main_benchmark_file(capsys, monkeypatch):
     """Test CLI main() invocation with 'benchmark <path>'."""
-    from trace_gc.cli import main
+    from tracegc.cli import main
     fixture_path = os.path.join(FIXTURES_DIR, "coding_agent_short.json")
-    monkeypatch.setattr("sys.argv", ["trace-gc", "benchmark", fixture_path, "--output", "json"])
+    monkeypatch.setattr("sys.argv", ["tracegc", "benchmark", fixture_path, "--output", "json"])
     main()
     captured = capsys.readouterr()
     parsed = json.loads(captured.out)

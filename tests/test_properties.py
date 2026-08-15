@@ -1,9 +1,9 @@
 import pytest
 import json
 from hypothesis import given, strategies as st, settings
-from trace_gc.graph import StateGraph
-from trace_gc.compactor import compact_events, _render_event
-from trace_gc.receipts import get_receipt
+from tracegc.graph import StateGraph
+from tracegc.compactor import compact_events, _render_event
+from tracegc.receipts import get_receipt
 
 @st.composite
 def event_trace_strategy(draw):
@@ -131,7 +131,7 @@ def test_unrelated_active_branch_never_pruned(events):
     and appends it to the generated trace. Verifies that none of the active-branch
     events appear in the pruned set after compaction.
     """
-    from trace_gc.compactor import compact_events
+    from tracegc.compactor import compact_events
     # Append a guaranteed-active branch of 2 events
     max_ts = max((e["timestamp"] for e in events), default=0)
     active_events = [
@@ -167,7 +167,7 @@ def test_invalid_trace_duplicate_id_raises_value_error(raw_events):
     Confirms that the pipeline fails predictably (ValueError) rather than
     producing corrupt output or raising an unrelated exception type.
     """
-    from trace_gc.compactor import compact_events
+    from tracegc.compactor import compact_events
     # Force a duplicate by copying the first event
     dup_event = dict(raw_events[0])
     dup_event["timestamp"] = raw_events[0]["timestamp"] + 1  # different data, same ID

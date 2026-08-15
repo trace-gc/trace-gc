@@ -1,8 +1,8 @@
 import pytest
 import json
-from trace_gc.graph import StateGraph
-from trace_gc.receipts import collect_receipts, get_receipt
-from trace_gc.compactor import compact_events
+from tracegc.graph import StateGraph
+from tracegc.receipts import collect_receipts, get_receipt
+from tracegc.compactor import compact_events
 
 
 def test_receipts_basic():

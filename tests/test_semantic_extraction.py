@@ -1,6 +1,6 @@
 import pytest
-from trace_gc import compact, CompactionResult, Receipt
-from trace_gc.semantic import extract_semantic_events
+from tracegc import compact, CompactionResult, Receipt
+from tracegc.semantic import extract_semantic_events
 
 
 def test_extract_key_value():
@@ -211,7 +211,7 @@ def test_semantic_extraction_disabled_fallback():
     Content that would normally produce a structured event must instead
     come back as a neutral text_chunk event with the original text intact.
     """
-    from trace_gc.api import normalize_input
+    from tracegc.api import normalize_input
 
     # This text would extract key-value and error events under Tier 2.
     log_text = "database=postgres\n[ERROR] connection refused"
@@ -246,7 +246,7 @@ def test_extraction_reproducibility():
     deterministic and must also be equal across runs when prefix and
     start_time are the same.
     """
-    from trace_gc.semantic import extract_semantic_events
+    from tracegc.semantic import extract_semantic_events
 
     text = (
         "database=postgres\n"
@@ -289,7 +289,7 @@ def test_no_silent_loss_on_unmatched_content():
       (a) A single line that matches no rule.
       (b) A mixed block: some matching lines interleaved with non-matching lines.
     """
-    from trace_gc.semantic import extract_semantic_events
+    from tracegc.semantic import extract_semantic_events
 
     # (a) Purely unmatched content — e.g. a plain English sentence.
     plain_text = "This is just a plain English sentence with no structure."

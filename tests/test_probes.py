@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import os
 import pytest
-from trace_gc import TraceGC, compact_events
-from trace_gc.events import load_events_from_json
+from tracegc import TraceGC, compact_events
+from tracegc.events import load_events_from_json
 
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "sample_trace.json")
 
@@ -206,9 +206,9 @@ def test_cycle_collapse_receipt_probe(monkeypatch):
     cycle destroys the underlying event data, preventing downstream processes or
     debugging logs from resolving individual step payloads inside the cycle.
     """
-    from trace_gc.graph import StateGraph
-    import trace_gc.compactor
-    from trace_gc.topo_sampler import _deterministic_cluster_id
+    from tracegc.graph import StateGraph
+    import tracegc.compactor
+    from tracegc.topo_sampler import _deterministic_cluster_id
     
     events = [
         {"id": "e001", "type": "decision", "timestamp": 1000, "content": "Start cycle test"},
@@ -229,7 +229,7 @@ def test_cycle_collapse_receipt_probe(monkeypatch):
         graph.add_edge("c03", "e002", "sequence")
         return graph
 
-    monkeypatch.setattr(trace_gc.compactor, "_build_state_graph", mock_build_state_graph)
+    monkeypatch.setattr(tracegc.compactor, "_build_state_graph", mock_build_state_graph)
     
     client = TraceGC()
     for ev in events:

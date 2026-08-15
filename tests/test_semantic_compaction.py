@@ -1,9 +1,9 @@
 import pytest
 import json
-from trace_gc import compact_events
-from trace_gc.events import validate_event
-from trace_gc.semantic import extract_semantic_events
-from trace_gc.receipts import get_receipt
+from tracegc import compact_events
+from tracegc.events import validate_event
+from tracegc.semantic import extract_semantic_events
+from tracegc.receipts import get_receipt
 
 
 def test_proposed_active_confirmed_extraction():
@@ -200,7 +200,7 @@ def test_determinism_and_serialization_roundtrip():
 def test_semantic_non_equivalence_retention():
     # Test cases where semantic similarity does NOT mean equivalence
     # We should not prune different statements about postgresql
-    from trace_gc.api import compact
+    from tracegc.api import compact
     messages = [
         {"role": "user", "content": "Considering PostgreSQL."},
         {"role": "user", "content": "Do not use PostgreSQL."},
@@ -217,7 +217,7 @@ def test_semantic_non_equivalence_retention():
 
 def test_semantic_incremental_cache():
     # Test incremental extraction cache lookup and version invalidation
-    from trace_gc.api import SemanticCache, compact
+    from tracegc.api import SemanticCache, compact
     
     cache = SemanticCache(parser_version="1.0.0")
     messages = [
@@ -254,7 +254,7 @@ def test_semantic_incremental_cache():
 
 def test_obsolete_file_reads_pruning():
     # Test Rule 5C: obsolete file reads are pruned if a subsequent edit happens on the same file
-    from trace_gc.compactor import compact_events
+    from tracegc.compactor import compact_events
     events = [
         {"id": "e1", "type": "tool_call", "timestamp": 100, "parent_id": None, "tool_name": "read_file", "arguments": {"path": "src/app.py"}},
         {"id": "tr1", "type": "tool_result", "timestamp": 101, "parent_id": "e1", "call_id": "e1", "result": "def main(): pass"},
@@ -271,7 +271,7 @@ def test_obsolete_file_reads_pruning():
 
 def test_redundant_verifications_pruning():
     # Test Rule 5F: older successful verification runs are pruned if a newer success happens
-    from trace_gc.compactor import compact_events
+    from tracegc.compactor import compact_events
     events = [
         {"id": "e1", "type": "command_run", "timestamp": 100, "parent_id": None, "command": "pytest tests/a.py", "exit_code": 0},
         {"id": "tr1", "type": "tool_result", "timestamp": 101, "parent_id": "e1", "call_id": "e1", "result": "1 passed"},

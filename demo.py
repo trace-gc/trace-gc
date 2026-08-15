@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 import json
 import time
-from trace_gc import TraceGC
+from tracegc import TraceGC
 
 FIXTURE_SUPPORT = os.path.join(os.path.dirname(__file__), "tests", "fixtures", "support_agent_trace.json")
 FIXTURE_RESEARCH = os.path.join(os.path.dirname(__file__), "tests", "fixtures", "research_agent_trace.json")

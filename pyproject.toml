@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "trace-gc"
-version = "0.4.0"
+name = "tracegc"
+version = "0.5.0"
 description = "Deterministic, receipt-preserving context compaction library for LLM agents"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -18,12 +18,12 @@ authors = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/athishio/trace-gc"
-Issues = "https://github.com/athishio/trace-gc/issues"
+Homepage = "https://github.com/tracegc/tracegc"
+Issues = "https://github.com/tracegc/tracegc/issues"
 "Web App" = "https://trace-gc-web.vercel.app"
 
 [project.scripts]
-trace-gc = "trace_gc.cli:main"
+tracegc = "tracegc.cli:main"
 
 [project.optional-dependencies]
 test = [
@@ -33,7 +33,7 @@ test = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["trace_gc*"]
+include = ["tracegc*"]
 
 [tool.setuptools.package-data]
-"trace_gc.benchmark" = ["fixtures/*.json"]
+"tracegc.benchmark" = ["fixtures/*.json"]

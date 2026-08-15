@@ -1,5 +1,5 @@
 import pytest
-from trace_gc import compact, CompactionResult, Receipt
+from tracegc import compact, CompactionResult, Receipt
 
 # Mock LangChain message objects for testing
 class HumanMessage:

@@ -1,6 +1,6 @@
 # TraceGC
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/athishio/trace-gc/blob/main/demo/colab_demo.ipynb) [![Live Web App](https://img.shields.io/badge/Live-Web%20App-blueviolet)](https://trace-gc-web.vercel.app)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/athishio/tracegc/blob/main/demo/colab_demo.ipynb) [![Live Web App](https://img.shields.io/badge/Live-Web%20App-blueviolet)](https://tracegc-web.vercel.app)
 
 Deterministic, receipt-preserving context compaction library for AI agents with no extra LLM calls.
 
@@ -8,13 +8,13 @@ Deterministic, receipt-preserving context compaction library for AI agents with 
 * **Avoids stale-context confusion** by removing overridden variables and dead-end attempts.
 * **Zero added latency from AI calls** using a fully local, deterministic compaction engine.
 * **Retention Policy Control** through optional metadata (`importance`, `tags`, `retain_until`) to protect critical events from being pruned.
-* **CLI Auditing & Inspection** (`trace-gc` command) to compact, dry-run, explain pruning decisions, diff prompts, and restore receipts.
+* **CLI Auditing & Inspection** (`tracegc` command) to compact, dry-run, explain pruning decisions, diff prompts, and restore receipts.
 * **Composable with provider-native compaction** (Anthropic's `compact` API, OpenAI's trained-in Codex pruning, Google ADK) — run TraceGC as a deterministic pre-filter upstream instead of choosing one or the other. See [Provider-Native Compaction vs. TraceGC](#provider-native-compaction-vs-tracegc).
 
 ## Interactive Demos
 
-*   **Google Colab**: Try out the library and run code examples directly in the [Colab Notebook](https://colab.research.google.com/github/athishio/trace-gc/blob/main/demo/colab_demo.ipynb).
-*   **Web App**: Visualize the compaction behavior interactively in your browser at the [TraceGC Web Playground](https://trace-gc-web.vercel.app).
+*   **Google Colab**: Try out the library and run code examples directly in the [Colab Notebook](https://colab.research.google.com/github/athishio/tracegc/blob/main/demo/colab_demo.ipynb).
+*   **Web App**: Visualize the compaction behavior interactively in your browser at the [TraceGC Web Playground](https://tracegc-web.vercel.app).
 
 ## Description
 
@@ -61,7 +61,7 @@ pip install -e .
 Once published to PyPI, you can install the package directly:
 
 ```bash
-pip install trace-gc
+pip install tracegc
 ```
 
 ---
@@ -71,7 +71,7 @@ pip install trace-gc
 The recommended interface for managing agent context is the `TraceGC` client. It allows you to append events step-by-step as they occur and run compaction on-demand:
 
 ```python
-from trace_gc import TraceGC
+from tracegc import TraceGC
 
 # 1. Initialize the client
 client = TraceGC()
@@ -116,11 +116,11 @@ print(result["prompt"])
 
 ### Storage Backends (In-Memory & SQLite)
 
-`TraceGC` supports customizable storage backends via `trace-gc-storage`. By default, `TraceGC()` uses in-memory storage (`MemoryStore()`). To persist session events and receipts across restarts, pass a `SQLiteStore`:
+`TraceGC` supports customizable storage backends via `tracegc-storage`. By default, `TraceGC()` uses in-memory storage (`MemoryStore()`). To persist session events and receipts across restarts, pass a `SQLiteStore`:
 
 ```python
-from trace_gc import TraceGC
-from trace_gc_storage import MemoryStore, SQLiteStore
+from tracegc import TraceGC
+from tracegc_storage import MemoryStore, SQLiteStore
 
 # 1. Default in-memory usage
 client_mem = TraceGC()  # uses MemoryStore()
@@ -147,7 +147,7 @@ print(res_reloaded["prompt"])
 If you already have a full, pre-collected list of events upfront, you can use the lower-level single-shot function `compact_events()` directly:
 
 ```python
-from trace_gc import compact_events
+from tracegc import compact_events
 
 events = [
     {"id": "e001", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Hello"},
@@ -160,7 +160,7 @@ result = compact_events(events)
 
 ## LLM Middleware Adapters
 
-TraceGC provides concrete integration helper functions for popular LLM provider libraries. These helper functions are optional (lazy-loaded inside the functions), so the core `trace-gc` package remains completely dependency-free.
+TraceGC provides concrete integration helper functions for popular LLM provider libraries. These helper functions are optional (lazy-loaded inside the functions), so the core `tracegc` package remains completely dependency-free.
 
 To use these adapters, ensure you install the corresponding package first:
 
@@ -175,8 +175,8 @@ pip install openai
 ### Usage Example
 
 ```python
-from trace_gc import TraceGC
-from trace_gc.middleware import call_openai_with_compaction
+from tracegc import TraceGC
+from tracegc.middleware import call_openai_with_compaction
 
 # Build and populate your context
 client = TraceGC()
@@ -186,7 +186,7 @@ client.add_event({"id": "e2", "type": "set_var", "timestamp": 1010, "parent_id":
 # Call the model; the adapter automatically handles compaction of history 
 # and sends the compacted prompt as the system prefix.
 res = call_openai_with_compaction(
-    trace_gc=client,
+    tracegc=client,
     model="gpt-4o-mini",
     user_message="Explain what value x holds.",
     api_key="your-openai-api-key"  # Optional, falls back to env var
@@ -227,7 +227,7 @@ print(client.get_receipt("e002"))
 
 ## Event Schema
 
-TraceGC validates incoming events according to five structured types defined in `trace_gc/events.py`:
+TraceGC validates incoming events according to five structured types defined in `tracegc/events.py`:
 
 *   **`set_var`**: Used to update state variables.
     *   *Required fields*: `id`, `type`, `timestamp`, `key`, `value`
@@ -323,23 +323,23 @@ anything that mattered.
 | Short | full_history | 121.0 | 100% | 100% | 100% | 100% | n/a |
 | Short | truncate_by_event_count | 116.3 | 100% | 100% | 100% | 100% | n/a |
 | Short | ai_summarize_single | 90.7 | 100% | 33.3% | 55.6% | 0.0% | No |
-| Short | **trace_gc_pipeline** | **75.3** | **100%** | **100%** | **100%** | **100%** | **Yes** |
+| Short | **tracegc_pipeline** | **75.3** | **100%** | **100%** | **100%** | **100%** | **Yes** |
 | Medium | full_history | 379.7 | 100% | 100% | 100% | 100% | n/a |
 | Medium | truncate_by_event_count | 133.3 | 0.0% | 100% | 0.0% | 0.0% | n/a |
 | Medium | ai_summarize_single | 146.7 | 66.7% | 88.9% | 100% | 0.0% | No |
 | Medium | ai_summarize_recursive | 131.0 | 0.0% | 66.7% | 100% | 0.0% | No |
-| Medium | **trace_gc_pipeline** | **299.0** | **100%** | **100%** | **100%** | **100%** | **Yes** |
+| Medium | **tracegc_pipeline** | **299.0** | **100%** | **100%** | **100%** | **100%** | **Yes** |
 | Long | full_history | 1301.0 | 100% | 100% | 100% | 100% | n/a |
 | Long | truncate_by_event_count | 104.3 | 0.0% | 0.0% | 0.0% | 0.0% | n/a |
 | Long | ai_summarize_single | 243.4 | 100% | 0.0% | 100% | 0.0% | No |
 | Long | ai_summarize_recursive | 219.2 | 100% | 0.0% | 100% | 0.0% | No |
-| Long | **trace_gc_pipeline** | **1028.3** | **100%** | **100%** | **100%** | **100%** | **Yes** |
+| Long | **tracegc_pipeline** | **1028.3** | **100%** | **100%** | **100%** | **100%** | **Yes** |
 
-*(Truncated for brevity above — see [Comparative Benchmark Report](https://github.com/athishio/trace-gc/blob/main/trace_gc/benchmark/benchmark_report.md) for the full table including token-count truncation, average latencies, and per-tier breakdowns.)*
+*(Truncated for brevity above — see [Comparative Benchmark Report](https://github.com/tracegc/tracegc/blob/main/tracegc/benchmark/benchmark_report.md) for the full table including token-count truncation, average latencies, and per-tier breakdowns.)*
 
 ### Methodology Note: Exact Substring Matching
 > [!NOTE]
-> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `trace_gc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](https://github.com/athishio/trace-gc/blob/main/WRITEUP.md#supplementary-finding-live-answer-quality-check) section of `WRITEUP.md`. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
+> The decision probe checks for exact substring survival against the original event text. This structurally favors methods that preserve verbatim text (`truncate_by_event_count`, `truncate_by_token_count`, `tracegc_pipeline`) over methods that paraphrase (`ai_summarize_single`, `ai_summarize_recursive`) — a correctly-summarized, semantically accurate paraphrase can score 0% on this probe even when it retains the right information in different words. We report probe scores as-is because they're deterministic and reproducible, but this benchmark measures literal information survival, not downstream answer correctness. For a test of actual downstream answer correctness (an LLM answering a real question from compacted vs. full context), see the Scenario 5 stress-test result in the [Supplementary Finding: Live Answer-Quality Check](https://github.com/tracegc/tracegc/blob/main/WRITEUP.md#supplementary-finding-live-answer-quality-check) section of `WRITEUP.md`. We have not separately investigated the low artifact-accuracy scores for AI summarization on long traces, so this caveat does not extend to that metric either — it may reflect a genuine limitation of summarization, a different measurement artifact, or something else; it is simply unexamined.
 
 ### What this actually shows
 
@@ -353,13 +353,13 @@ by destroying information, not by understanding it.
 You can reproduce the free, deterministic benchmark results locally against the exact 9 bundled trace fixtures using the CLI:
 
 ```bash
-trace-gc benchmark --sample
+tracegc benchmark --sample
 ```
 
 To run the benchmark against your own custom trace file (in JSON or JSONL format):
 
 ```bash
-trace-gc benchmark /path/to/trace.json
+tracegc benchmark /path/to/trace.json
 ```
 
 Add `--output json` to produce machine-readable JSON output instead of the default table.
@@ -409,19 +409,19 @@ truly discarded, and every pruned event remains recoverable via
 
 For local development across the package monorepo, you must install the packages in editable mode to allow correct module resolution (e.g. without manually managing `PYTHONPATH`).
 
-1. Install the core `trace-gc` package:
+1. Install the core `tracegc` package:
    ```bash
    pip install -e .
    ```
-2. Install the `trace-gc-storage` package:
+2. Install the `tracegc-storage` package:
    ```bash
-   pip install -e ./trace-gc-storage
+   pip install -e ./tracegc-storage
    ```
-3. Once functional implementations are added for `trace-gc-mcp` and `trace-gc-langgraph`, install them similarly:
+3. Once functional implementations are added for `tracegc-mcp` and `tracegc-langgraph`, install them similarly:
    ```bash
-   pip install -e ./trace-gc-mcp
+   pip install -e ./tracegc-mcp
    ```
    ```bash
-   pip install -e ./trace-gc-langgraph
+   pip install -e ./tracegc-langgraph
    ```
 

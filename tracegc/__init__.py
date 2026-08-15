@@ -1,0 +1,18 @@
+# tracegc/__init__.py
+"""Top level package for the deterministic context compaction library.
+
+Exports the public API so users can simply do::
+
+    from tracegc import StateGraph, compact_events, TraceGCMiddleware
+"""
+
+from .graph import StateGraph
+from .compactor import compact_events
+from .middleware import (
+    TraceGCMiddleware,
+    call_anthropic_with_compaction,
+    call_openai_with_compaction,
+)
+from .api import TraceGC, compact, CompactionResult, Receipt
+from .semantic import extract_semantic_events
+from .analysis import analyze_retained_events

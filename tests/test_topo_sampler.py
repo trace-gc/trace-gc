@@ -1,7 +1,7 @@
 import pytest
 import hashlib
-from trace_gc.graph import StateGraph
-from trace_gc.topo_sampler import collapse_cycles, _deterministic_cluster_id
+from tracegc.graph import StateGraph
+from tracegc.topo_sampler import collapse_cycles, _deterministic_cluster_id
 
 def test_deterministic_cluster_id():
     members = ["c", "a", "b"]
@@ -79,7 +79,7 @@ def test_iterative_tarjan_10k_cycle():
 def test_iterative_tarjan_100k_linear_chain():
     """BUG-2 regression: a 100K linear chain (no cycles) must complete without stack overflow."""
     import time
-    from trace_gc.compactor import compact_events
+    from tracegc.compactor import compact_events
     n = 100_000
     events = [{"id": "e0", "type": "decision", "timestamp": 1000, "parent_id": None, "content": "Root"}]
     for i in range(1, n):
