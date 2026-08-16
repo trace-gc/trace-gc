@@ -37,6 +37,45 @@ TraceGC was originally created as a deterministic alternative to AI-based contex
   <a href="https://tracegc.vercel.app"><strong>Learn more about TraceGC →</strong></a>
 </p>
 
+## ⭐ Features
+
+<table width="100%">
+  <tr>
+    <td width="33%" valign="top">
+      <img src="assets/icons/shield.svg" alt="Shield" width="36" height="36" /><br />
+      <strong>Deterministic & Safe</strong><br />
+      <sub>Guaranteed-safe pruning with no hallucination or summarization risks.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="assets/icons/database.svg" alt="Database" width="36" height="36" /><br />
+      <strong>Local & Fast</strong><br />
+      <sub>Runs entirely locally with sub-millisecond execution.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="assets/icons/leaf.svg" alt="Leaf" width="36" height="36" /><br />
+      <strong>Token Efficient</strong><br />
+      <sub>Reduces token usage without losing important context.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="assets/icons/history.svg" alt="History" width="36" height="36" /><br />
+      <strong>Fully Recoverable</strong><br />
+      <sub>Any pruned context can be reconstructed perfectly when needed.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="assets/icons/puzzle.svg" alt="Puzzle" width="36" height="36" /><br />
+      <strong>Easy Integration</strong><br />
+      <sub>Simple Python API with seamless LLM and agent framework support.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="assets/icons/code.svg" alt="Code" width="36" height="36" /><br />
+      <strong>Open & Extensible</strong><br />
+      <sub>Apache 2.0 licensed and built for extensibility.</sub>
+    </td>
+  </tr>
+</table>
+
 ## Install
 
 Install the latest stable release from PyPI:
