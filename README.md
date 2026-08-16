@@ -135,6 +135,10 @@ print(result["prompt"])
 
 ## Why TraceGC?
 
+<p align="center">
+  <img src="./assets/tracegc-compaction-demo.svg" alt="TraceGC Context Compaction Demonstration" width="100%" />
+</p>
+
 *   **Deterministic Pruning** — Operates on exact directed multigraph representations with absolute safety guarantees and no stochastic LLM calls.
 *   **Recoverable Receipts** — Pruned steps leave behind lightweight inline stubs (`[RECEIPT node_id]`) to maintain history context while keeping raw content fully restorable on-demand.
 *   **Local Performance** — Executes locally in sub-milliseconds with zero API costs, avoiding network roundtrips and model latencies.
@@ -144,9 +148,9 @@ print(result["prompt"])
 
 TraceGC compiles your agent's execution logs through five pipeline stages:
 
-```
-Agent Trace ──► State Graph ──► Deterministic Pruning ──► Receipt Generation ──► Compact Context
-```
+<p align="center">
+  <img src="./assets/tracegc-pipeline-demo.svg" alt="TraceGC Compilation Pipeline Demonstration" width="100%" />
+</p>
 
 1.  **Dead-Branch Sweeper**: Traces and removes aborted tool executions and failed branches starting from `abandon` markers.
 2.  **Override Engine**: Identifies variable updates (`set_var`) and retains only the latest active state per key.
@@ -293,6 +297,10 @@ print(res["metrics"]) # {input_tokens, output_tokens, tokens_before, tokens_afte
 ---
 
 ### Receipts & Event Recovery
+
+<p align="center">
+  <img src="./assets/tracegc-recovery-demo.svg" alt="TraceGC Receipt Recovery Demonstration" width="100%" />
+</p>
 
 Pruned events are never permanently deleted from memory. Instead, they are flagged as pruned (`pruned=True`) on the `StateGraph` and represented by inline stubs (`[RECEIPT <node_id>]`). 
 

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 120" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #030506; stroke: #1C2927; rx: 6; ry: 6; }
+      .node-circle { fill: #10161a; stroke: #3e4a5c; stroke-width: 2; }
+      .node-text { font-family: Inter, Segoe UI, sans-serif; font-size: 12px; font-weight: bold; fill: #8a99ad; text-anchor: middle; }
+      .active-text { fill: #F7F9FA; }
+      .flow-dot { fill: #B7F52A; filter: drop-shadow(0px 0px 4px #B7F52A); }
+      
+      /* Animation Sequence */
+      .stage-1 { animation: highlightStage1 6s infinite; }
+      .stage-2 { animation: highlightStage2 6s infinite; }
+      .stage-3 { animation: highlightStage3 6s infinite; }
+      .stage-4 { animation: highlightStage4 6s infinite; }
+      .stage-5 { animation: highlightStage5 6s infinite; }
+      
+      @keyframes highlightStage1 { 0%, 20% { fill: #B7F52A; stroke: #B7F52A; } }
+      @keyframes highlightStage2 { 20%, 40% { fill: #62D92B; stroke: #62D92B; } }
+      @keyframes highlightStage3 { 40%, 60% { fill: #20B96B; stroke: #20B96B; } }
+      @keyframes highlightStage4 { 60%, 80% { fill: #00A85A; stroke: #00A85A; } }
+      @keyframes highlightStage5 { 80%, 100% { fill: #24E5D7; stroke: #24E5D7; } }
+    </style>
+  </defs>
+
+  <rect class="bg" width="800" height="120" />
+
+  <!-- Connecting Path Lines -->
+  <line x1="80" y1="60" x2="720" y2="60" stroke="#1d2d2a" stroke-width="3" />
+
+  <!-- Nodes -->
+  <!-- Node 1: Events -->
+  <g transform="translate(80, 60)">
+    <circle class="node-circle stage-1" r="22" />
+    <text class="node-text active-text" y="5">Events</text>
+  </g>
+
+  <!-- Node 2: Graph -->
+  <g transform="translate(240, 60)">
+    <circle class="node-circle stage-2" r="22" />
+    <text class="node-text active-text" y="5">Graph</text>
+  </g>
+
+  <!-- Node 3: Analysis -->
+  <g transform="translate(400, 60)">
+    <circle class="node-circle stage-3" r="22" />
+    <text class="node-text active-text" y="5">Analysis</text>
+  </g>
+
+  <!-- Node 4: Compacting -->
+  <g transform="translate(560, 60)">
+    <circle class="node-circle stage-4" r="22" />
+    <text class="node-text active-text" y="5">Compact</text>
+  </g>
+
+  <!-- Node 5: Receipts -->
+  <g transform="translate(720, 60)">
+    <circle class="node-circle stage-5" r="22" />
+    <text class="node-text active-text" y="5">Receipts</text>
+  </g>
+
+  <!-- Flow Dot Moving along the path -->
+  <circle class="flow-dot" r="6">
+    <animateMotion dur="6s" repeatCount="indefinite"
+      path="M 80,60 L 240,60 L 400,60 L 560,60 L 720,60" />
+  </circle>
+</svg>

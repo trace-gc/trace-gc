@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #030506; stroke: #1C2927; stroke-width: 1.5; rx: 8; ry: 8; }
+      .text-title { font-family: Inter, Segoe UI, sans-serif; font-size: 16px; font-weight: 700; fill: #F7F9FA; }
+      .text-subtitle { font-family: Inter, Segoe UI, sans-serif; font-size: 11px; fill: #8a99ad; }
+      .event-box { stroke: #1d2d2a; stroke-width: 1; rx: 4; ry: 4; height: 32px; }
+      .event-text { font-family: Courier New, monospace; font-size: 12px; font-weight: bold; }
+      
+      /* Animating Groups */
+      .event-keep { fill: #10161a; stroke: #20B96B; }
+      .event-keep-text { fill: #65D83B; }
+      .event-pruned { animation: pruneStep 8s infinite; }
+      .event-receipt { animation: receiptStep 8s infinite; opacity: 0; }
+      .compact-container { animation: shiftUp 8s infinite; }
+
+      @keyframes pruneStep {
+        0%, 25% { fill: #161c1b; stroke: #8a99ad; opacity: 1; }
+        35%, 65% { fill: #111413; stroke: #3e4a5c; opacity: 0.35; }
+        75%, 100% { opacity: 0; transform: scaleY(0); }
+      }
+
+      @keyframes receiptStep {
+        0%, 65% { opacity: 0; transform: scale(0.9); }
+        75%, 100% { fill: #091316; stroke: #24E5D7; opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes shiftUp {
+        0%, 65% { transform: translateY(0); }
+        75%, 100% { transform: translateY(-75px); }
+      }
+    </style>
+  </defs>
+
+  <!-- Left: Full Execution History Box -->
+  <g transform="translate(20, 20)">
+    <rect class="bg" width="360" height="400" />
+    <text class="text-title" x="20" y="35">Full Execution History</text>
+    <text class="text-subtitle" x="20" y="55">Before TraceGC Compaction (8 events, 840 tokens)</text>
+
+    <!-- Event List -->
+    <!-- e001 -->
+    <g transform="translate(20, 75)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e001] User Request</text>
+    </g>
+    <!-- e002 -->
+    <g transform="translate(20, 112)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e002] Tool Call (web_search)</text>
+    </g>
+    <!-- e003 (Pruned - Old State) -->
+    <g class="event-pruned" transform="translate(20, 149)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#8a99ad" x="15" y="20">[e003] set_var x = 10 (Superseded)</text>
+    </g>
+    <!-- e004 (Pruned - Failed Branch) -->
+    <g class="event-pruned" transform="translate(20, 186)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#8a99ad" x="15" y="20">[e004] Tool Call (run_tests) - Failed</text>
+    </g>
+    <!-- e005 (Pruned - Duplicate) -->
+    <g class="event-pruned" transform="translate(20, 223)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#8a99ad" x="15" y="20">[e005] Tool Call (web_search) - Duplicate</text>
+    </g>
+    <!-- e006 -->
+    <g transform="translate(20, 260)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e006] set_var x = 20 (Latest State)</text>
+    </g>
+    <!-- e007 (Pruned - Error Resolved) -->
+    <g class="event-pruned" transform="translate(20, 297)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#8a99ad" x="15" y="20">[e007] Error: DB connection timeout</text>
+    </g>
+    <!-- e008 -->
+    <g transform="translate(20, 334)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e008] Final Result</text>
+    </g>
+  </g>
+
+  <!-- Right: Compacted Context Box -->
+  <g transform="translate(420, 20)">
+    <rect class="bg" width="360" height="400" />
+    <text class="text-title" x="20" y="35">Compacted Context</text>
+    <text class="text-subtitle" x="20" y="55">TraceGC Active Compaction (340 tokens, -60%)</text>
+
+    <!-- Base Keepers -->
+    <g transform="translate(20, 75)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e001] User Request</text>
+    </g>
+    <g transform="translate(20, 112)">
+      <rect class="event-box event-keep" width="320" />
+      <text class="event-text event-keep-text" x="15" y="20">[e002] Tool Call (web_search)</text>
+    </g>
+
+    <!-- Receipts that fade in at Y coordinates where pruned events used to be -->
+    <g class="event-receipt" transform="translate(20, 149)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#24E5D7" x="15" y="20">[RECEIPT e003] x=10 superseded</text>
+    </g>
+    <g class="event-receipt" transform="translate(20, 186)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#24E5D7" x="15" y="20">[RECEIPT e004] e004 abandoned</text>
+    </g>
+    <g class="event-receipt" transform="translate(20, 223)">
+      <rect class="event-box" width="320" />
+      <text class="event-text" fill="#24E5D7" x="15" y="20">[RECEIPT e005] e005 duplicated</text>
+    </g>
+
+    <!-- Compact Container shifts up to hide empty vertical space -->
+    <g class="compact-container">
+      <g transform="translate(20, 260)">
+        <rect class="event-box event-keep" width="320" />
+        <text class="event-text event-keep-text" x="15" y="20">[e006] set_var x = 20</text>
+      </g>
+      
+      <!-- Receipt for e007 -->
+      <g class="event-receipt" transform="translate(20, 297)">
+        <rect class="event-box" width="320" />
+        <text class="event-text" fill="#24E5D7" x="15" y="20">[RECEIPT e007] error resolved</text>
+      </g>
+      
+      <g transform="translate(20, 334)">
+        <rect class="event-box event-keep" width="320" />
+        <text class="event-text event-keep-text" x="15" y="20">[e008] Final Result</text>
+      </g>
+    </g>
+  </g>
+</svg>
