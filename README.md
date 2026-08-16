@@ -1,6 +1,17 @@
-<p align="center">
-  <img src="./assets/tracegc-hero.svg" alt="TraceGC — Trace. Optimize. Evolve." width="100%" />
-</p>
+<div align="center">
+  <a href="https://tracegc.vercel.app">
+    <picture>
+      <source media="(prefers-color-scheme: dark)"
+              srcset="docs/assets/tracegc-logo-horizontal-dark.svg">
+      <source media="(prefers-color-scheme: light)"
+              srcset="docs/assets/tracegc-logo-horizontal-light.svg">
+      <img
+        src="docs/assets/tracegc-logo-horizontal-light.png"
+        alt="TraceGC"
+        width="500">
+    </picture>
+  </a>
+</div>
 
 <p align="center">
   <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/v/tracegc.svg" alt="PyPI Version"></a>
