@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg { fill: #030506; stroke: #1C2927; stroke-width: 1.5; rx: 6; ry: 6; }
+      .box { fill: #10161a; stroke: #3e4a5c; stroke-width: 1.5; rx: 4; ry: 4; }
+      .box-highlight { fill: #111a18; stroke: #20B96B; stroke-width: 1.5; rx: 4; ry: 4; }
+      .arrow { stroke: #62D92B; stroke-width: 2; fill: none; }
+      .text-title { font-family: Inter, Segoe UI, sans-serif; font-size: 14px; font-weight: bold; fill: #F7F9FA; text-anchor: middle; }
+      .text-body { font-family: Inter, Segoe UI, sans-serif; font-size: 11px; fill: #aab3ba; text-anchor: middle; }
+      .text-body-highlight { font-family: Inter, Segoe UI, sans-serif; font-size: 11px; font-weight: bold; fill: #65D83B; text-anchor: middle; }
+      .accent-glow { fill: #24E5D7; opacity: 0.15; filter: blur(8px); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="800" height="280" />
+
+  <!-- Flow Boxes -->
+  <!-- Box 1: Long-running Agent -->
+  <g transform="translate(40, 90)">
+    <rect class="box" width="180" height="100" />
+    <text class="text-title" x="90" y="35">Long-Running Agent</text>
+    <text class="text-body" x="90" y="60">Generates continuous</text>
+    <text class="text-body" x="90" y="76">execution traces &amp; logs</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <g>
+    <path class="arrow" d="M 220,140 L 285,140" />
+    <polygon points="285,136 295,140 285,144" fill="#62D92B" />
+  </g>
+
+  <!-- Box 2: Growing Context / Problems -->
+  <g transform="translate(295, 45)">
+    <rect class="box" stroke="#b63c3c" width="210" height="190" />
+    <text class="text-title" fill="#f87171" x="105" y="30">Unmanaged Context</text>
+    <text class="text-body" fill="#ef4444" x="105" y="55">⚠️ Context Rot &amp; Inflation</text>
+    <line x1="20" y1="70" x2="190" y2="70" stroke="#b63c3c" stroke-opacity="0.3" />
+    <text class="text-body" x="105" y="95">• Superseded variables</text>
+    <text class="text-body" x="105" y="115">• Abandoned failed branches</text>
+    <text class="text-body" x="105" y="135">• Duplicate tool executions</text>
+    <text class="text-body" x="105" y="155">• Resolved errors</text>
+    <text class="text-body" x="105" y="175">• Unnecessary API cost</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <g>
+    <path class="arrow" d="M 505,140 L 570,140" />
+    <polygon points="570,136 580,140 570,144" fill="#62D92B" />
+  </g>
+
+  <!-- Box 3: Compact Context + Receipts -->
+  <g transform="translate(580, 90)">
+    <rect class="box-highlight" width="180" height="100" />
+    <text class="text-title" fill="#65D83B" x="90" y="35">TraceGC Compacted</text>
+    <text class="text-body-highlight" x="90" y="60">✔ Compact Active State</text>
+    <text class="text-body-highlight" x="90" y="76">✔ Recoverable Receipts</text>
+  </g>
+</svg>

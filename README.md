@@ -1,24 +1,5 @@
-<div align="center">
-  <a href="https://tracegc.vercel.app">
-    <picture>
-      <source media="(prefers-color-scheme: dark)"
-              srcset="docs/assets/tracegc-logo-horizontal-dark.svg">
-      <source media="(prefers-color-scheme: light)"
-              srcset="docs/assets/tracegc-logo-horizontal-light.svg">
-      <img
-        src="docs/assets/tracegc-logo-horizontal-light.png"
-        alt="TraceGC"
-        width="500">
-    </picture>
-  </a>
-</div>
-
 <p align="center">
-  <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/v/tracegc.svg" alt="PyPI Version"></a>
-  <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/pyversions/tracegc.svg" alt="Python Versions"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://tracegc.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
-  <a href="https://colab.research.google.com/github/tracegc/tracegc/blob/main/demo/colab_demo.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+  <img src="./assets/tracegc-hero.svg" alt="TraceGC — Trace. Optimize. Evolve." width="100%" />
 </p>
 
 <p align="center">
@@ -29,6 +10,10 @@
   <a href="https://github.com/tracegc/tracegc/issues">Issues</a>
 </p>
 
+### Deterministic context compaction for production AI agents.
+
+**Keep the context that matters. Compact what no longer does. Recover what you need.**
+
 TraceGC is an open-source library and platform for deterministic context management in AI agent systems. It enables developers building stateful agent workflows to safely reduce LLM token consumption and avoid stale-context confusion by structurally pruning obsolete execution paths and redundant actions. Operating entirely locally and deterministically, TraceGC ensures that critical agent history remains compact, correct, and fully recoverable without the added latency, variability, or cost of LLM-based summarization routines.
 
 TraceGC was originally created as a deterministic alternative to AI-based context summarization for agent workflows. It was designed to bridge the gap between lossy conversation truncation and expensive model-driven context rewrites, providing absolute safety guarantees and local sub-millisecond execution.
@@ -36,6 +21,53 @@ TraceGC was originally created as a deterministic alternative to AI-based contex
 <p>
   <a href="https://tracegc.vercel.app"><strong>Learn more about TraceGC →</strong></a>
 </p>
+
+<p align="center">
+  <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/v/tracegc.svg" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/tracegc/"><img src="https://img.shields.io/pypi/pyversions/tracegc.svg" alt="Python Versions"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://tracegc.vercel.app"><img src="https://img.shields.io/badge/Live-Web%20App-blueviolet" alt="Live Web App"></a>
+  <a href="https://colab.research.google.com/github/tracegc/tracegc/blob/main/demo/colab_demo.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+</p>
+
+### ⚡ Quick Install
+
+```bash
+pip install tracegc
+```
+
+| **Deterministic** | **Recoverable** | **Local** |
+| :--- | :--- | :--- |
+| Predictable pruning | Receipt-based stubs | Sub-millisecond execution |
+| Zero-dep core | Framework agnostic | High efficiency |
+
+---
+
+## ❓ Why TraceGC?
+
+<p align="center">
+  <img src="./assets/tracegc-flow.svg" alt="Why TraceGC Flow Diagram" width="100%" />
+</p>
+
+### Context Compaction Demonstration
+<p align="center">
+  <img src="./assets/tracegc-compaction-demo.svg" alt="TraceGC Context Compaction Demonstration" width="100%" />
+</p>
+
+#### Before vs. After Visual Comparison
+
+*   **Full History (Before)**:
+    *   Growing execution context containing obsolete variables, failed branches, duplicate tool runs, and resolved errors.
+*   **Compacted Context (After)**:
+    *   Only the required current state and active execution path are kept. Obsolete steps are replaced with inline `[RECEIPT node_id]` stubs.
+
+### Key Compaction Pillars
+*   **Deterministic Pruning** — Operates on exact directed multigraph representations with absolute safety guarantees and no stochastic LLM calls.
+*   **Recoverable Receipts** — Pruned steps leave behind lightweight inline stubs (`[RECEIPT node_id]`) to maintain history context while keeping raw content fully restorable on-demand.
+*   **Local Performance** — Executes locally in sub-milliseconds with zero API costs, avoiding network roundtrips and model latencies.
+*   **Framework Agnostic & Composable** — Integrates seamlessly as a zero-dependency pre-filter upstream of any agent loop, model provider, or native compaction tool.
+
+---
 
 ## ⭐ Features
 
@@ -76,31 +108,25 @@ TraceGC was originally created as a deterministic alternative to AI-based contex
   </tr>
 </table>
 
-## Install
+---
 
-Install the latest stable release from PyPI:
+## 🚀 Quick Start
 
+Follow these logical steps to integrate TraceGC:
+
+#### 1. Install
 ```bash
 pip install tracegc
 ```
 
-To upgrade an existing installation:
-
-```bash
-pip install --upgrade tracegc
-```
-
-## Quick Start
-
-The recommended interface for managing agent context is the `TraceGC` client. It allows you to append events step-by-step as they occur and run compaction on-demand:
-
+#### 2. Import & Initialize
 ```python
 from tracegc import TraceGC
-
-# 1. Initialize the client
 client = TraceGC()
+```
 
-# 2. Append events incrementally as they occur
+#### 3. Add events incrementally as they occur
+```python
 client.add_event({
     "id": "e001", 
     "type": "decision", 
@@ -124,8 +150,11 @@ client.add_event({
     "key": "x", 
     "value": 20  # Supersedes x=10
 })
+```
 
-# 3. Compact the context history on-demand
+#### 4. Compact & Inspect Results
+```python
+# Compact the context history on-demand
 result = client.compact()
 
 # Access the compacted prompt prefix
@@ -133,18 +162,9 @@ print(result["prompt"])
 # Output: [RECEIPT e002]\nx = 20
 ```
 
-## Why TraceGC?
+---
 
-<p align="center">
-  <img src="./assets/tracegc-compaction-demo.svg" alt="TraceGC Context Compaction Demonstration" width="100%" />
-</p>
-
-*   **Deterministic Pruning** — Operates on exact directed multigraph representations with absolute safety guarantees and no stochastic LLM calls.
-*   **Recoverable Receipts** — Pruned steps leave behind lightweight inline stubs (`[RECEIPT node_id]`) to maintain history context while keeping raw content fully restorable on-demand.
-*   **Local Performance** — Executes locally in sub-milliseconds with zero API costs, avoiding network roundtrips and model latencies.
-*   **Framework Agnostic & Composable** — Integrates seamlessly as a zero-dependency pre-filter upstream of any agent loop, model provider, or native compaction tool.
-
-## How It Works
+## ⚙️ How It Works
 
 TraceGC compiles your agent's execution logs through five pipeline stages:
 
@@ -160,9 +180,52 @@ TraceGC compiles your agent's execution logs through five pipeline stages:
 
 *For formal definitions, refer to the [TraceGC Specification](SPEC.md).*
 
-## Benchmarks
+---
 
-TraceGC is continuously validated against synthetic and natural agent execution logs. The table below summarizes the compaction and probe accuracy results compared to truncation and AI-driven summarization across short, medium, and long traces:
+## 🎫 Receipts & Event Recovery
+
+To prevent context compaction from causing permanent "memory loss," TraceGC employs a deterministic receipt recovery model. Pruned events are never discarded from memory; they are converted into lightweight inline receipt stubs (e.g., `[RECEIPT node_id]`). Callers can recover the complete, original event dictionary (including arguments, tool names, and return values) at any time by calling `get_receipt(graph, node_id)`.
+
+<p align="center">
+  <img src="./assets/tracegc-recovery-demo.svg" alt="TraceGC Receipt Recovery Demonstration" width="100%" />
+</p>
+
+```python
+# Call get_receipt from the TraceGC client instance:
+print(client.get_receipt("e002"))
+# Returns:
+# {'id': 'e002', 'type': 'set_var', 'timestamp': 1010, 'parent_id': 'e001', 'key': 'x', 'value': 10, 'pruned': True}
+```
+
+---
+
+## 🌐 Ecosystem
+
+<p align="center">
+  <img src="./assets/tracegc-ecosystem.svg" alt="TraceGC Ecosystem Packages Diagram" width="100%" />
+</p>
+
+| Package | Role | Source / Docs |
+| :--- | :--- | :--- |
+| **`tracegc`** | Core engine, event schemas, deduplication, and compaction pipeline. | [Core Package](./) |
+| **`tracegc-storage`** | In-Memory & SQLite persistence/backends. | [`tracegc-storage`](./tracegc-storage) |
+| **`tracegc-mcp`** | Model Context Protocol integration. | [`tracegc-mcp`](./tracegc-mcp) |
+| **`tracegc-langgraph`** | LangGraph middleware and lifecycle adapters. | [`tracegc-langgraph`](./tracegc-langgraph) |
+| **`tracegc-crewai`** | CrewAI task/agent context adapters. | [`tracegc-crewai`](./tracegc-crewai) |
+
+---
+
+## 📊 Benchmarks
+
+TraceGC is continuously validated against synthetic and natural agent execution logs. The table below summarizes the compaction and probe accuracy results compared to truncation and AI-driven summarization across short, medium, and long traces.
+
+### 📈 Benchmark Snapshot
+*   **Full History**: Preserves 100% of information but experiences complete context window bloat.
+*   **Truncation**: Smallest size but destroys 100% of medium/long recall and decision paths.
+*   **AI Summarization**: Latency and token cost overhead, non-deterministic, and drops decision rationale (0% accuracy).
+*   **TraceGC**: **Only method scoring 100% on correctness/recall probes** across all tested trace lengths, with substantial token reduction.
+
+### Full Results Table
 
 | Trace Size | Compaction Method | Average Tokens | Recall Accuracy | Artifact Accuracy | Continuation Accuracy | Decision Accuracy | Deterministic |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -183,47 +246,32 @@ TraceGC is continuously validated against synthetic and natural agent execution 
 
 For a complete breakdown of latencies, token-count truncation, and per-tier metrics, see the [Comparative Benchmark Report](tracegc/benchmark/benchmark_report.md).
 
-## Explore TraceGC
+---
+
+## 🔍 Explore TraceGC
 
 Try TraceGC interactively in the web playground or run the deterministic benchmarks locally:
 
 *   **[Open Web Playground →](https://tracegc.vercel.app)**
 *   **[Run Benchmarks Locally →](tracegc/benchmark/benchmark_report.md#reproducing-the-benchmark)**
 
-## Contributing
-
-Contributions are welcome. Please open an issue or submit a pull request on the [TraceGC Issue Tracker](https://github.com/tracegc/tracegc/issues).
-
-## License
-
-TraceGC is available under the [Apache License 2.0](LICENSE).
-
 ---
 
-## Technical Deep Dive
+## 🛠️ Technical Deep Dive
 
----
+<details>
+<summary><strong>Expand to view detailed architecture, event schemas, prior art comparisons, and implementation caveats</strong></summary>
 
-### Description
+### Architecture & Description
 
 TraceGC is a framework-agnostic, installable library combining deterministic graph-based pruning with recoverable receipts. While existing tools (such as Self-GC, ClawVM, Cognee, ContextNest, Headroom, and MemGPT/Letta) split these approaches across research papers, hosted SaaS products, client-side compressors, or LLM-based summarization routines, TraceGC ships as a simple, drop-in, zero-dependency Python library designed for developers building stateful agent workflows.
 
 By modeling the agent's interaction history (execution traces) as a directed multigraph, TraceGC identifies and removes obsolete or superseded steps, dead execution branches, and cycles. When elements are pruned, TraceGC leaves behind lightweight, deterministic *receipt stubs* inline, allowing agents to preserve awareness of their history. Furthermore, the complete original content of any pruned step remains fully recoverable on-demand.
 
----
-
-### Architecture
-
-TraceGC processes execution traces through a linear compilation pipeline, transforming a raw timeline of structured events into a clean, compacted prompt prefix.
-
 #### Entry Points
 
 *   **`TraceGC` (Recommended for Agent Loops)**: An incremental-friendly wrapper class. It allows you to append events one by one as they happen (`add_event()`) and call `compact()` on demand. This is the recommended entry point for long-running agent loops where history grows step-by-step.
 *   **`compact_events()` (Single-Shot)**: A low-level function that accepts a static list of event dictionaries and returns the compacted output in a single call. Best for post-mortem processing or batch compaction pipelines.
-
-#### The Receipts Model
-
-To prevent context-compaction from causing permanent "memory loss," TraceGC employs a deterministic receipt recovery model. Pruned events are never discarded from memory; they are converted into lightweight inline receipt stubs (e.g., `[RECEIPT node_id]`). Callers can recover the complete, original event dictionary (including arguments, tool names, and return values) at any time by calling `get_receipt(graph, node_id)`.
 
 #### Storage Backends (In-Memory & SQLite)
 
@@ -296,25 +344,6 @@ print(res["metrics"]) # {input_tokens, output_tokens, tokens_before, tokens_afte
 
 ---
 
-### Receipts & Event Recovery
-
-<p align="center">
-  <img src="./assets/tracegc-recovery-demo.svg" alt="TraceGC Receipt Recovery Demonstration" width="100%" />
-</p>
-
-Pruned events are never permanently deleted from memory. Instead, they are flagged as pruned (`pruned=True`) on the `StateGraph` and represented by inline stubs (`[RECEIPT <node_id>]`). 
-
-Callers can recover the complete original event payload at any time using `get_receipt(graph, node_id)`. For example, recovering `e002` returns the original superseded variable assignment dict:
-
-```python
-# Call get_receipt from the TraceGC client instance:
-print(client.get_receipt("e002"))
-# Returns:
-# {'id': 'e002', 'type': 'set_var', 'timestamp': 1010, 'parent_id': 'e001', 'key': 'x', 'value': 10, 'pruned': True}
-```
-
----
-
 ### Event Schema
 
 TraceGC validates incoming events according to five structured types defined in `tracegc/events.py`:
@@ -362,7 +391,7 @@ TraceGC validates incoming events according to five structured types defined in 
 
 ---
 
-### Prior Art / Related Work
+### Prior Art & Related Work
 
 The problem of managing long-context window limits and cost in agentic systems is an active area of research and engineering. Related approaches include:
 *   **Provider-Native Compaction (Anthropic, OpenAI, Google)**: Compaction built directly into the model provider's API or agent framework — e.g. Anthropic's `compact` API (configurable thresholds, custom summarization prompts, available across Claude API/Bedrock/Vertex/Foundry), OpenAI's Codex-Max/Codex models trained to prune their own history as a native model objective, and Google ADK's compaction architecture. These require no separate library, but compact by having a model summarize or rewrite history — the same class of approach as "AI-Driven Summarization" below, just integrated at the provider layer instead of bolted on by the developer.
@@ -398,7 +427,7 @@ TraceGC does not compete with hosted retrieval systems, general-purpose cognitiv
 
 ---
 
-### Benchmarking Methodology & Limitations
+### Benchmarking Details & Methodology
 
 #### Methodology Note: Exact Substring Matching
 > [!NOTE]
@@ -466,3 +495,17 @@ For local development across the package monorepo, you must install the packages
     ```bash
     pip install -e ./tracegc-langgraph
     ```
+
+</details>
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome. Please open an issue or submit a pull request on the [TraceGC Issue Tracker](https://github.com/tracegc/tracegc/issues).
+
+---
+
+## 📄 License
+
+TraceGC is available under the [Apache License 2.0](LICENSE).
